@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ms" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Analytics - Jadual Peperiksaan</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        pbi: {
+                            darkBg: '#0f172a',
+                            darkCard: '#1e293b',
+                            darkBorder: '#334155',
+                            lightBg: '#f8fafc',
+                            lightCard: '#ffffff',
+                            lightBorder: '#e2e8f0',
+                            teal: '#00e5ff',
+                            yellow: '#f59e0b',
+                            purple: '#8b5cf6',
+                            green: '#10b981',
+                            blue: '#3b82f6',
+                            pink: '#ec4899'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- PapaParse for robust CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Custom Scrollbar for Power BI Feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .light ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Power BI Tile Effect */
+        .pbi-tile {
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pbi-tile:hover {
+            transform: translateY(-2px);
+        }
+        .pbi-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+        .tile-teal::before { background-color: #00e5ff; }
+        .tile-yellow::before { background-color: #f59e0b; }
+        .tile-purple::before { background-color: #8b5cf6; }
+        .tile-green::before { background-color: #10b981; }
+        .tile-blue::before { background-color: #3b82f6; }
+
+        /* Glowing pulses */
+        @keyframes pulse-teal {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(0, 229, 255, 0.4); }
+        }
+        .glow-active {
+            animation: pulse-teal 3s infinite;
+        }
+    </style>
+</head>
+<body class="bg-pbi-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+
+    <!-- Top Header Navigation Bar -->
+    <header class="bg-slate-900/90 dark:bg-slate-900/90 light:bg-white border-b border-slate-800 dark:border-slate-800 light:border-slate-200 sticky top-0 z-50 backdrop-blur-md px-4 py-3">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo & Brand Title -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-cyan-500 via-blue-600 to-amber-400 p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                    <i class="fa-solid fa-chart-column text-slate-950 text-xl font-bold"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg md:text-xl tracking-tight text-white light:text-slate-900">
+                            Power BI Analytics
+                        </h1>
+                        <span class="text-xs bg-cyan-500/20 text-cyan-400 font-mono px-2 py-0.5 rounded border border-cyan-500/30 font-semibold">
+                            PRO DASHBOARD
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 light:text-slate-500 flex items-center gap-1.5">
+                        <i class="fa-solid fa-calendar-days text-cyan-400"></i>
+                        <span>Jadual Peperiksaan & Pengurusan Masa</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Live Status & Sheet Info -->
+            <div class="hidden lg:flex items-center gap-3 bg-slate-800/80 light:bg-slate-100 px-3.5 py-1.5 rounded-lg border border-slate-700/60 light:border-slate-300 text-xs">
+                <div class="flex items-center gap-2">
+                    <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="syncStatusText" class="font-medium text-slate-200 light:text-slate-700">Tersambung ke Google Sheet</span>
+                </div>
+                <span class="text-slate-600">|</span>
+                <span class="text-slate-400 light:text-slate-500" id="lastUpdatedTime">Kemaskini Terkini: Tepat Sekarang</span>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-lg bg-slate-800 light:bg-slate-100 text-slate-300 light:text-slate-700 hover:bg-slate-700 light:hover:bg-slate-200 transition border border-slate-700 light:border-slate-300 flex items-center gap-2 text-xs font-semibold" title="Tukar Tema (Light/Dark)">
+                    <i class="fa-solid fa-moon text-amber-400" id="themeIcon"></i>
+                    <span id="themeLabel" class="hidden sm:inline">Dark Theme</span>
+                </button>
+
+                <!-- Refresh Sheet Data Button -->
+                <button onclick="fetchSheetData()" class="p-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold transition flex items-center gap-2 text-xs shadow-md shadow-cyan-900/30" title="Muat Semula Data dari Google Sheet">
+                    <i class="fa-solid fa-rotate text-sm" id="refreshIcon"></i>
+                    <span class="hidden sm:inline">Refresh Sheet</span>
+                </button>
+
+                <!-- Fullscreen Button -->
+                <button onclick="toggleFullscreen()" class="p-2.5 rounded-lg bg-slate-800 light:bg-slate-100 text-slate-300 light:text-slate-700 hover:bg-slate-700 light:hover:bg-slate-200 transition border border-slate-700 light:border-slate-300" title="Skrin Penuh">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Body -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- Top Notification Banner if Sync Failed/Fallback Used -->
+        <div id="noticeBanner" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 p-3 rounded-xl flex items-center justify-between text-xs sm:text-sm">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base"></i>
+                <span id="noticeBannerText">Memuatkan data dari Google Sheet...</span>
+            </div>
+            <button onclick="document.getElementById('noticeBanner').classList.add('hidden')" class="text-amber-400 hover:text-amber-200">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- 1. KPI Metric Cards Bar (Power BI Card Visuals) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            
+            <!-- Metric 1: Jumlah Peperiksaan SPM (Jumlah, Selesai, Belum Selesai) -->
+            <div class="pbi-tile tile-teal bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">PEPERIKSAAN SPM</span>
+                        <i class="fa-solid fa-file-signature text-cyan-400 text-lg"></i>
+                    </div>
+                    <div class="mt-2 flex items-baseline justify-between">
+                        <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiTotalPapers">0</span>
+                        <span class="text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Jumlah SPM</span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-700/60 light:border-slate-200 flex items-center justify-between text-[11px]">
+                    <span class="text-emerald-400 font-semibold flex items-center gap-1" title="Kertas SPM yang telah selesai">
+                        <i class="fa-solid fa-circle-check"></i> Selesai: <strong id="kpiSpmCompleted" class="font-mono text-xs">0</strong>
+                    </span>
+                    <span class="text-amber-400 font-semibold flex items-center gap-1" title="Kertas SPM yang belum selesai">
+                        <i class="fa-solid fa-hourglass-half"></i> Belum: <strong id="kpiSpmPending" class="font-mono text-xs">0</strong>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Metric 2: Subjek Berdaftar -->
+            <div class="pbi-tile tile-purple bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">SUBJEK BERDAFTAR</span>
+                    <i class="fa-solid fa-book-open-reader text-purple-400 text-lg"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiTotalSubjects">0</span>
+                    <span class="text-xs font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Subjek Utama</span>
+                </div>
+                <p class="text-[11px] text-slate-400 light:text-slate-500 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-layer-group text-purple-400"></i> Agihan merentasi jadual
+                </p>
+            </div>
+
+            <!-- Metric 3: COUNTDOWN SPM BERTULIS -->
+            <div class="pbi-tile tile-yellow bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">COUNTDOWN SPM BERTULIS</span>
+                    <i class="fa-solid fa-calendar-check text-amber-400 text-lg"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiTotalDays">0</span>
+                    <span class="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Baki Hari</span>
+                </div>
+                <p class="text-[11px] text-slate-400 light:text-slate-500 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-clock text-amber-400"></i> Tarikh BM: 23/11/2026
+                </p>
+            </div>
+
+            <!-- Metric 4: Sesi Akan Datang / Selesai -->
+            <div class="pbi-tile tile-green bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">STATUS SESI</span>
+                    <i class="fa-solid fa-list-check text-emerald-400 text-lg"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiUpcomingCount">0</span>
+                        <span class="text-xs text-slate-400">/ <span id="kpiCompletedCount">0</span> Selesai</span>
+                    </div>
+                    <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Akan Datang</span>
+                </div>
+                <p class="text-[11px] text-slate-400 light:text-slate-500 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i> Berdasarkan tarikh semasa
+                </p>
+            </div>
+
+            <!-- Metric 5: Kiraan Detik Kertas/Sesi Seterusnya -->
+            <div class="pbi-tile tile-blue bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md glow-active">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">SESI NEXT COUNTDOWN</span>
+                    <i class="fa-solid fa-hourglass-half text-blue-400 text-lg animate-spin" style="animation-duration: 8s;"></i>
+                </div>
+                <div class="mt-1">
+                    <div class="text-sm font-bold text-blue-400 truncate" id="kpiNextSubject">Sesi Seterusnya</div>
+                    <div class="text-2xl font-black font-mono text-white light:text-slate-900 mt-0.5" id="kpiCountdownTimer">00d 00h 00m</div>
+                </div>
+                <p class="text-[11px] text-slate-400 light:text-slate-500 mt-1 truncate" id="kpiNextDetails">
+                    Masa & Tempat
+                </p>
+            </div>
+
+        </section>
+
+        <!-- 2. Power BI Slicers & Filter Controls Bar -->
+        <section class="bg-slate-800/90 light:bg-white p-4 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 light:border-slate-200 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-cyan-400"></i>
+                    <h2 class="font-bold text-sm tracking-wide text-white light:text-slate-900 uppercase">Power BI Slicers & Filters</h2>
+                    <span class="text-xs bg-slate-700 light:bg-slate-200 text-slate-300 light:text-slate-700 px-2 py-0.5 rounded-full" id="filterCountBadge">0 Ditapis</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-400 light:text-slate-600 hover:text-cyan-400 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/50 light:bg-slate-100 hover:bg-slate-700 border border-slate-600/50 light:border-slate-300">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                        <span>Reset Penapis</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Inputs Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                
+                <!-- Search Filter -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Carian Teks / Subjek</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Cari subjek, tempat..." class="w-full pl-8 pr-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    </div>
+                </div>
+
+                <!-- Subjek Filter -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Subjek</label>
+                    <select id="filterSubject" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Subjek</option>
+                    </select>
+                </div>
+
+                <!-- Hari Filter -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Hari</label>
+                    <select id="filterDay" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Hari</option>
+                    </select>
+                </div>
+
+                <!-- Tempat Filter -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Tempat</label>
+                    <select id="filterVenue" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Tempat</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Status Sesi</label>
+                    <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Status</option>
+                        <option value="AKAN_DATANG" selected>Akan Datang</option>
+                        <option value="HARI_INI">Hari Ini</option>
+                        <option value="SELESAI">Selesai</option>
+                    </select>
+                </div>
+
+                <!-- Perkara / Jenis Filter -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Jenis / Perkara</label>
+                    <select id="filterCategory" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Jenis</option>
+                        <option value="SPM">SPM</option>
+                        <option value="TRIAL">TRIAL / Percubaan</option>
+                        <option value="SEMINAR">SEMINAR</option>
+                    </select>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. Power BI Interactive Data Grid Table (Moved directly under Slicers & Filters) -->
+        <section class="bg-slate-800/90 light:bg-white rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-xl overflow-hidden">
+            
+            <!-- Table Header Bar -->
+            <div class="p-4 border-b border-slate-700 light:border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-800 light:bg-slate-50">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-table text-cyan-400 text-lg"></i>
+                    <div>
+                        <h3 class="font-bold text-base text-white light:text-slate-900">Matriks Jadual Peperiksaan Terperinci</h3>
+                        <p class="text-xs text-slate-400 light:text-slate-500">Klik mana-mana baris untuk butiran terperinci & kad pengajian</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 mr-2" id="tableRecordCounter">Menunjukkan 0 rekod</span>
+                    <!-- Export to CSV Button -->
+                    <button onclick="exportFilteredDataCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Eksport CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Responsive Table Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-900/80 light:bg-slate-100 text-slate-300 light:text-slate-700 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-200">
+                        <tr>
+                            <th onclick="sortTable('BIL_HARI')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Bil Hari <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('HARI')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Hari <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('TARIKH')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Tarikh <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('MASA_MULA')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Masa Ujian <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('SUBJEK')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Subjek <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('KERTAS')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Ujian / Kertas <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('PERKARA')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Perkara / Tajuk <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th onclick="sortTable('TEMPAT')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Tempat <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
+                            <th class="p-3.5">Catatan</th>
+                            <th class="p-3.5 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetableBody" class="divide-y divide-slate-700/50 light:divide-slate-200">
+                        <!-- Rows rendered dynamically via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Empty State -->
+            <div id="tableEmptyState" class="hidden p-12 text-center text-slate-400 light:text-slate-500">
+                <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-40"></i>
+                <p class="font-semibold text-sm">Tiada rekod ditemui berdasarkan penapis anda.</p>
+                <p class="text-xs mt-1">Cuba tetapkan semula penapis atau kata kunci carian anda.</p>
+            </div>
+
+        </section>
+
+        <!-- 4. Power BI Interactive Visual Charts Grid -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Chart 1: Agihan Kertas Mengikut Subjek -->
+            <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-cyan-400"></i>
+                        <h3 class="font-bold text-sm tracking-wide text-white light:text-slate-900">Bilangan Kertas Ujian mengikut Subjek</h3>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-mono">Bar Visual</span>
+                </div>
+                <div class="relative min-h-[260px] flex-1">
+                    <canvas id="chartSubjectPapers"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Taburan Sesi Mengikut Hari -->
+            <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-amber-400"></i>
+                        <h3 class="font-bold text-sm tracking-wide text-white light:text-slate-900">Kepadatan Sesi mengikut Hari</h3>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-mono">Doughnut Visual</span>
+                </div>
+                <div class="relative min-h-[260px] flex-1">
+                    <canvas id="chartDayDistribution"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: Agihan Sesi Mengikut Tempat -->
+            <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-location-dot text-purple-400"></i>
+                        <h3 class="font-bold text-sm tracking-wide text-white light:text-slate-900">Agihan Sesi mengikut Tempat / Lokasi</h3>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-mono">Polar Area</span>
+                </div>
+                <div class="relative min-h-[260px] flex-1">
+                    <canvas id="chartVenueDistribution"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 4: Masa Mula Ujian Breakdown -->
+            <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-business-time text-emerald-400"></i>
+                        <h3 class="font-bold text-sm tracking-wide text-white light:text-slate-900">Slot Masa Peperiksaan (Sesi Pagi vs Petang)</h3>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-mono">Time Breakdown</span>
+                </div>
+                <div class="relative min-h-[260px] flex-1">
+                    <canvas id="chartTimeBreakdown"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Detail Modal Popup for Exam Paper -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white light:hover:text-black text-lg p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="bg-cyan-500/20 text-cyan-400 p-3 rounded-xl border border-cyan-500/30">
+                    <i class="fa-solid fa-book-bookmark text-2xl"></i>
+                </div>
+                <div>
+                    <span id="modalSubjekBadge" class="text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded font-semibold">
+                        SUBJEK
+                    </span>
+                    <h3 id="modalPerkara" class="text-xl font-bold text-white light:text-slate-900 mt-1">
+                        Nama Perkara / Tajuk
+                    </h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs border-y border-slate-800 light:border-slate-200 py-3">
+                <div class="bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
+                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Hari & Tarikh</span>
+                    <span id="modalHariTarikh" class="text-slate-200 light:text-slate-800 font-bold text-sm">ISNIN, 12 JAN</span>
+                </div>
+
+                <div class="bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
+                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Masa Peperiksaan</span>
+                    <span id="modalMasa" class="text-slate-200 light:text-slate-800 font-bold text-sm">08:00 - 10:00</span>
+                </div>
+
+                <div class="bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
+                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Kod Kertas</span>
+                    <span id="modalKertas" class="text-cyan-400 font-mono font-bold text-sm">KERTAS 1</span>
+                </div>
+
+                <div class="bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
+                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Tempat / Lokasi</span>
+                    <span id="modalTempat" class="text-amber-400 font-bold text-sm">Dewan Peperiksaan</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/40 light:bg-slate-50 p-3 rounded-lg border border-slate-700/50 light:border-slate-200">
+                <span class="text-slate-400 light:text-slate-500 block text-xs font-semibold uppercase mb-1">Catatan Tambahan</span>
+                <p id="modalCatatan" class="text-slate-300 light:text-slate-700 text-xs italic">Tiada catatan khas.</p>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-slate-200 light:text-slate-800 rounded-lg text-xs font-bold transition">
+                    Tutup
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 light:bg-slate-900 text-white border border-slate-700 shadow-2xl rounded-xl p-4 flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toastMessage" class="text-xs font-medium">Message text</span>
+    </div>
+
+    <script>
+        // Google Sheet Published CSV Link from user prompt
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnQGkvEeyBKsnp4rJQSgck_hQL0aK8z6TKVn8bSSAa3Y9GoOq6cUX3TRWe7NCh5aRfsa8qEjxOEmjq/pub?output=csv";
+
+        // Global State Variables
+        let rawTimetableData = [];
+        let filteredData = [];
+        let charts = {};
+        let currentSort = { column: 'BIL_HARI', direction: 'asc' };
+        let currentTheme = 'dark';
+
+        // Robust Date & Time Parser supporting DD/MM/YYYY, YYYY-MM-DD, and various time formats
+        function parseDateTime(dateStr, timeStr) {
+            if (!dateStr) return new Date(NaN);
+            let year = 2026, month = 0, day = 1;
+            let hours = 8, minutes = 0;
+
+            const cleanDateStr = String(dateStr).trim();
+            const dateParts = cleanDateStr.split(/[\/\-\.]/);
+
+            if (dateParts.length === 3) {
+                if (dateParts[0].length === 4) {
+                    // YYYY-MM-DD
+                    year = parseInt(dateParts[0], 10);
+                    month = parseInt(dateParts[1], 10) - 1;
+                    day = parseInt(dateParts[2], 10);
+                } else {
+                    // DD/MM/YYYY or D/M/YYYY
+                    day = parseInt(dateParts[0], 10);
+                    month = parseInt(dateParts[1], 10) - 1;
+                    year = parseInt(dateParts[2], 10);
+                    if (year < 100) year += 2000;
+                }
+            }
+
+            if (timeStr) {
+                const cleanTimeStr = String(timeStr).trim().toUpperCase();
+                const isPM = cleanTimeStr.includes('PM');
+                const isAM = cleanTimeStr.includes('AM');
+                const rawDigits = cleanTimeStr.replace(/[^\d:\.]/g, '');
+                const timeParts = rawDigits.split(/[:\.]/);
+
+                if (timeParts.length >= 1 && timeParts[0] !== '') {
+                    hours = parseInt(timeParts[0], 10);
+                    if (timeParts.length >= 2 && timeParts[1] !== '') {
+                        minutes = parseInt(timeParts[1], 10);
+                    }
+                    if (isPM && hours < 12) hours += 12;
+                    if (isAM && hours === 12) hours = 0;
+                }
+            }
+
+            return new Date(year, month, day, hours, minutes, 0);
+        }
+
+        // Sample / Fallback Data in case CORS/Offline issue happens
+        const fallbackSampleData = [
+            { HARI: "ISNIN", TARIKH: "2026-09-07", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Bahasa Melayu Kertas 1", SUBJEK: "Bahasa Melayu", KERTAS: "1", BIL_HARI: "1", TEMPAT: "Dewan Utama", CATATAN: "Pensel 2B & Kad Pengenalan" },
+            { HARI: "SELASA", TARIKH: "2026-09-08", MASA_MULA: "08:00", MASA_TAMAT: "12:00", PERKARA: "Seminar Intensif Matematik", SUBJEK: "Matematik", KERTAS: "1", BIL_HARI: "2", TEMPAT: "Dewan Utama", CATATAN: "Bawa Kalkulator & Nota" },
+            { HARI: "RABU", TARIKH: "2026-09-09", MASA_MULA: "08:00", MASA_TAMAT: "10:15", PERKARA: "SPM Bahasa Inggeris Paper 1", SUBJEK: "Bahasa Inggeris", KERTAS: "1", BIL_HARI: "3", TEMPAT: "Dewan Utama", CATATAN: "Reading & Use of English" },
+            { HARI: "KHAMIS", TARIKH: "2026-11-26", MASA_MULA: "08:00", MASA_TAMAT: "10:00", PERKARA: "SPM Sejarah Kertas 1 & 2", SUBJEK: "Sejarah", KERTAS: "1 & 2", BIL_HARI: "4", TEMPAT: "Dewan Utama", CATATAN: "Kemaskini nota ringkas" },
+            { HARI: "JUMAAT", TARIKH: "2026-11-27", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Sains / Fizik Kertas 1", SUBJEK: "Sains", KERTAS: "1", BIL_HARI: "5", TEMPAT: "Makmal Sains A", CATATAN: "Bawa pembaris & pemadam" }
+        ];
+
+        // Main initialization on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchSheetData();
+            startCountdownTimer();
+        });
+
+        // Function to fetch and parse Google Sheet CSV
+        async function fetchSheetData() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            const syncDot = document.getElementById('syncStatusDot');
+            const syncText = document.getElementById('syncStatusText');
+            
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+            showNotice('Sedang mengambil data terkini dari Google Sheet...', 'info');
+
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: 'no-cache' });
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        if (results.data && results.data.length > 0) {
+                            rawTimetableData = processRawCSVData(results.data);
+                            syncDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+                            syncText.textContent = "Tersambung ke Google Sheet Live";
+                            showToast("Data Google Sheet berjaya dimuatkan!", "success");
+                            document.getElementById('noticeBanner').classList.add('hidden');
+                        } else {
+                            throw new Error("Data CSV kosong");
+                        }
+                        initDashboard();
+                    },
+                    error: (err) => {
+                        throw err;
+                    }
+                });
+
+            } catch (err) {
+                console.warn("Gagal memuatkan dari Google Sheet secara terus. Menggunakan data simulasi fallback:", err);
+                rawTimetableData = processRawCSVData(fallbackSampleData);
+                syncDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+                syncText.textContent = "Data Simulasi (Offline/Fallback)";
+                showNotice("Tidak dapat menghubungi Google Sheet secara terus. Menunjukkan data jadual terkini.", "warning");
+                showToast("Menggunakan data jadual sedia ada", "info");
+                initDashboard();
+            } finally {
+                if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                document.getElementById('lastUpdatedTime').textContent = `Kemaskini: ${new Date().toLocaleTimeString('ms-MY', {hour:'2-digit', minute:'2-digit'})}`;
+            }
+        }
+
+        // Helper function to normalize headers and field values
+        function processRawCSVData(data) {
+            return data.map((item, idx) => {
+                const getItem = (key) => {
+                    const foundKey = Object.keys(item).find(k => k.trim().toUpperCase() === key.toUpperCase());
+                    return foundKey ? item[foundKey].trim() : '';
+                };
+
+                return {
+                    id: idx + 1,
+                    HARI: getItem('HARI') || 'ISNIN',
+                    TARIKH: getItem('TARIKH') || new Date().toISOString().split('T')[0],
+                    MASA_MULA: getItem('MASA_MULA') || '08:00',
+                    MASA_TAMAT: getItem('MASA_TAMAT') || '10:00',
+                    PERKARA: getItem('PERKARA') || getItem('SUBJEK') || `Sesi Ujian ${idx + 1}`,
+                    SUBJEK: getItem('SUBJEK') || getItem('PERKARA') || 'Subjek Umum',
+                    KERTAS: getItem('KERTAS') || '1',
+                    BIL_HARI: getItem('BIL_HARI') || `${idx + 1}`,
+                    TEMPAT: getItem('TEMPAT') || 'Dewan Peperiksaan',
+                    CATATAN: getItem('CATATAN') || 'Tiada catatan'
+                };
+            });
+        }
+
+        // Helper function to format Kertas display text
+        function formatKertasText(kertas, prefix = 'Kertas ') {
+            if (!kertas) return '-';
+            const clean = String(kertas).trim();
+            const upper = clean.toUpperCase();
+
+            // Direct display for UTQH, MENDENGAR, BERTUTUR or if already has KERTAS
+            if (upper.includes('UTQH') || upper.includes('MENDENGAR') || upper.includes('BERTUTUR')) {
+                return clean;
+            }
+            if (upper.startsWith('KERTAS')) {
+                return clean;
+            }
+            return `${prefix}${clean}`;
+        }
+
+        // Initialize/Re-render Dashboard Components
+        function initDashboard() {
+            populateFilterDropdowns();
+            applyFilters();
+        }
+
+        // Populate Dropdown Slicers (Subjek, Hari, Tempat)
+        function populateFilterDropdowns() {
+            const subjectSelect = document.getElementById('filterSubject');
+            const daySelect = document.getElementById('filterDay');
+            const venueSelect = document.getElementById('filterVenue');
+
+            const subjects = [...new Set(rawTimetableData.map(d => d.SUBJEK))].filter(Boolean).sort();
+            const days = [...new Set(rawTimetableData.map(d => d.HARI))].filter(Boolean);
+            const venues = [...new Set(rawTimetableData.map(d => d.TEMPAT))].filter(Boolean).sort();
+
+            subjectSelect.innerHTML = '<option value="ALL">Semua Subjek</option>' + 
+                subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            daySelect.innerHTML = '<option value="ALL">Semua Hari</option>' + 
+                days.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            venueSelect.innerHTML = '<option value="ALL">Semua Tempat</option>' + 
+                venues.map(v => `<option value="${v}">${v}</option>`).join('');
+        }
+
+        // Determine Status of Session accurately
+        function getItemStatus(itemDateStr, todayStr) {
+            if (!itemDateStr) return 'AKAN_DATANG';
+            const itemDate = parseDateTime(itemDateStr, '00:00');
+            const todayDate = parseDateTime(todayStr, '00:00');
+
+            if (isNaN(itemDate.getTime())) return 'AKAN_DATANG';
+
+            const itemDayStr = itemDate.toISOString().split('T')[0];
+            const todayDayStr = todayDate.toISOString().split('T')[0];
+
+            if (itemDayStr === todayDayStr) return 'HARI_INI';
+            if (itemDate < todayDate) return 'SELESAI';
+            return 'AKAN_DATANG';
+        }
+
+        // Apply All Active Filters
+        function applyFilters() {
+            const searchText = document.getElementById('filterSearch').value.toLowerCase();
+            const selectedSubject = document.getElementById('filterSubject').value;
+            const selectedDay = document.getElementById('filterDay').value;
+            const selectedVenue = document.getElementById('filterVenue').value;
+            const selectedStatus = document.getElementById('filterStatus').value;
+            const selectedCategory = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : 'ALL';
+
+            let activeFilterCount = 0;
+            if (searchText) activeFilterCount++;
+            if (selectedSubject !== 'ALL') activeFilterCount++;
+            if (selectedDay !== 'ALL') activeFilterCount++;
+            if (selectedVenue !== 'ALL') activeFilterCount++;
+            if (selectedStatus !== 'ALL') activeFilterCount++;
+            if (selectedCategory !== 'ALL') activeFilterCount++;
+
+            document.getElementById('filterCountBadge').textContent = `${activeFilterCount} Ditapis`;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Filter context for KPI calculation (Filters by search, subject, day, venue, category EXCEPT status filter)
+            const kpiBaseData = rawTimetableData.filter(item => {
+                const matchesSearch = !searchText || 
+                    item.SUBJEK.toLowerCase().includes(searchText) ||
+                    item.PERKARA.toLowerCase().includes(searchText) ||
+                    item.TEMPAT.toLowerCase().includes(searchText) ||
+                    item.CATATAN.toLowerCase().includes(searchText);
+
+                const matchesSubject = selectedSubject === 'ALL' || item.SUBJEK === selectedSubject;
+                const matchesDay = selectedDay === 'ALL' || item.HARI === selectedDay;
+                const matchesVenue = selectedVenue === 'ALL' || item.TEMPAT === selectedVenue;
+
+                let matchesCategory = true;
+                if (selectedCategory !== 'ALL') {
+                    const itemPerkaraUpper = (item.PERKARA || '').toUpperCase();
+                    if (selectedCategory === 'SPM') {
+                        matchesCategory = itemPerkaraUpper.includes('SPM');
+                    } else if (selectedCategory === 'TRIAL') {
+                        matchesCategory = itemPerkaraUpper.includes('TRIAL') || itemPerkaraUpper.includes('PERCUBAAN') || itemPerkaraUpper.includes('PERCOBAAN');
+                    } else if (selectedCategory === 'SEMINAR') {
+                        matchesCategory = itemPerkaraUpper.includes('SEMINAR') || itemPerkaraUpper.includes('BENGKEL');
+                    }
+                }
+
+                return matchesSearch && matchesSubject && matchesDay && matchesVenue && matchesCategory;
+            });
+
+            // Filter for table & visual charts view (Includes status filter)
+            filteredData = kpiBaseData.filter(item => {
+                const itemStatus = getItemStatus(item.TARIKH, todayStr);
+                return selectedStatus === 'ALL' || itemStatus === selectedStatus;
+            });
+
+            sortDataArray(filteredData, currentSort.column, currentSort.direction);
+
+            updateKPIs(kpiBaseData);
+            renderTable();
+            renderCharts();
+        }
+
+        // Reset Filters
+        function resetFilters() {
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterSubject').value = 'ALL';
+            document.getElementById('filterDay').value = 'ALL';
+            document.getElementById('filterVenue').value = 'ALL';
+            document.getElementById('filterStatus').value = 'AKAN_DATANG';
+            if (document.getElementById('filterCategory')) {
+                document.getElementById('filterCategory').value = 'ALL';
+            }
+            applyFilters();
+            showToast("Penapis diset semula", "info");
+        }
+
+        // Update KPI Metric Cards
+        function updateKPIs(kpiData = filteredData) {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            // 1. KERTAS SPM (Jumlah, Telah Selesai, Belum Selesai)
+            const spmPapers = kpiData.filter(d => (d.PERKARA || '').toUpperCase().includes('SPM'));
+            const spmTotal = spmPapers.length;
+
+            let spmCompleted = 0;
+            let spmPending = 0;
+
+            spmPapers.forEach(d => {
+                const st = getItemStatus(d.TARIKH, todayStr);
+                if (st === 'SELESAI') spmCompleted++;
+                else spmPending++;
+            });
+
+            document.getElementById('kpiTotalPapers').textContent = spmTotal;
+            document.getElementById('kpiSpmCompleted').textContent = spmCompleted;
+            document.getElementById('kpiSpmPending').textContent = spmPending;
+
+            // 2. Subjek Berdaftar
+            const uniqueSubjects = new Set(kpiData.map(d => d.SUBJEK)).size;
+            document.getElementById('kpiTotalSubjects').textContent = uniqueSubjects;
+
+            // 3. COUNTDOWN SPM BERTULIS (23/11/2026)
+            const todayReset = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const spmBmDate = new Date(2026, 10, 23); // Nov 23, 2026
+            const timeDiff = spmBmDate.getTime() - todayReset.getTime();
+            const daysRemaining = Math.max(0, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
+            document.getElementById('kpiTotalDays').textContent = daysRemaining;
+
+            // 4. Status Sesi (Akan Datang vs Selesai)
+            let upcoming = 0;
+            let completed = 0;
+            kpiData.forEach(d => {
+                const st = getItemStatus(d.TARIKH, todayStr);
+                if (st === 'SELESAI') completed++;
+                else upcoming++;
+            });
+            document.getElementById('kpiUpcomingCount').textContent = upcoming;
+            document.getElementById('kpiCompletedCount').textContent = completed;
+
+            // 5. SESI NEXT COUNTDOWN - Robust date/time parsing
+            const nowMs = now.getTime();
+
+            const upcomingSessions = rawTimetableData
+                .map(d => {
+                    const startDate = parseDateTime(d.TARIKH, d.MASA_MULA);
+                    let endDate = parseDateTime(d.TARIKH, d.MASA_TAMAT || d.MASA_MULA);
+                    
+                    if (endDate <= startDate) {
+                        endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+                    }
+
+                    return {
+                        item: d,
+                        startDate: startDate,
+                        endDate: endDate,
+                        diffStart: startDate.getTime() - nowMs,
+                        diffEnd: endDate.getTime() - nowMs
+                    };
+                })
+                .filter(s => !isNaN(s.startDate.getTime()) && s.diffEnd > 0)
+                .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+
+            if (upcomingSessions.length > 0) {
+                const nextSess = upcomingSessions[0];
+                const item = nextSess.item;
+                
+                document.getElementById('kpiNextSubject').textContent = `${item.SUBJEK} (${item.PERKARA})`;
+                document.getElementById('kpiNextDetails').textContent = `${item.HARI}, ${item.TARIKH} @ ${item.TEMPAT}`;
+                
+                window.nextSessionTargetDate = nextSess.startDate;
+                window.nextSessionEndDate = nextSess.endDate;
+            } else {
+                document.getElementById('kpiNextSubject').textContent = "Semua Sesi Selesai";
+                document.getElementById('kpiNextDetails').textContent = "Tiada sesi akan datang.";
+                window.nextSessionTargetDate = null;
+                window.nextSessionEndDate = null;
+            }
+        }
+
+        // Live Countdown Timer
+        function startCountdownTimer() {
+            setInterval(() => {
+                const timerEl = document.getElementById('kpiCountdownTimer');
+                if (!window.nextSessionTargetDate || isNaN(window.nextSessionTargetDate.getTime())) {
+                    timerEl.textContent = "00d 00h 00m";
+                    return;
+                }
+
+                const now = new Date();
+                const diff = window.nextSessionTargetDate - now;
+
+                if (diff <= 0) {
+                    if (window.nextSessionEndDate && now < window.nextSessionEndDate) {
+                        timerEl.textContent = "SEDANG BERLANGSUNG";
+                        timerEl.className = "text-xl font-black font-mono text-emerald-400 animate-pulse mt-0.5";
+                    } else {
+                        timerEl.textContent = "HARI INI / SELESAI";
+                        timerEl.className = "text-xl font-black font-mono text-cyan-400 mt-0.5";
+                    }
+                    return;
+                }
+
+                timerEl.className = "text-2xl font-black font-mono text-white light:text-slate-900 mt-0.5";
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                if (days > 0) {
+                    timerEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    timerEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+                }
+            }, 1000);
+        }
+
+        // Render Table Data
+        function renderTable() {
+            const tbody = document.getElementById('timetableBody');
+            const emptyState = document.getElementById('tableEmptyState');
+            const recordCounter = document.getElementById('tableRecordCounter');
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            recordCounter.textContent = `Menunjukkan ${filteredData.length} daripada ${rawTimetableData.length} rekod`;
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            tbody.innerHTML = filteredData.map(row => {
+                const status = getItemStatus(row.TARIKH, todayStr);
+                
+                let statusBadge = '';
+                if (status === 'SELESAI') {
+                    statusBadge = `<span class="bg-slate-700/60 text-slate-400 px-2 py-0.5 rounded text-[10px] font-semibold">Selesai</span>`;
+                } else if (status === 'HARI_INI') {
+                    statusBadge = `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">Hari Ini</span>`;
+                } else {
+                    statusBadge = `<span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded text-[10px] font-semibold">Akan Datang</span>`;
+                }
+
+                return `
+                    <tr onclick="openModal(${row.id})" class="hover:bg-slate-700/40 light:hover:bg-slate-100 transition cursor-pointer group">
+                        <td class="p-3.5 font-mono text-cyan-400 font-bold">#${row.BIL_HARI}</td>
+                        <td class="p-3.5 font-semibold text-slate-200 light:text-slate-800">${row.HARI}</td>
+                        <td class="p-3.5 font-mono text-slate-300 light:text-slate-700 whitespace-nowrap">${row.TARIKH}</td>
+                        <td class="p-3.5 font-mono text-amber-400 whitespace-nowrap">
+                            <i class="fa-regular fa-clock text-[10px] mr-1"></i>${row.MASA_MULA} - ${row.MASA_TAMAT}
+                        </td>
+                        <td class="p-3.5 font-bold text-white light:text-slate-900 group-hover:text-cyan-400 transition">
+                            ${row.SUBJEK}
+                        </td>
+                        <td class="p-3.5 font-mono">
+                            <span class="bg-slate-700 light:bg-slate-200 text-slate-200 light:text-slate-800 px-2 py-0.5 rounded text-[10px] font-semibold">${formatKertasText(row.KERTAS, 'Kertas ')}</span>
+                        </td>
+                        <td class="p-3.5 text-slate-300 light:text-slate-700 max-w-[200px] truncate">${row.PERKARA}</td>
+                        <td class="p-3.5 text-slate-300 light:text-slate-700 font-medium">
+                            <i class="fa-solid fa-location-dot text-slate-400 mr-1 text-[10px]"></i>${row.TEMPAT}
+                        </td>
+                        <td class="p-3.5 text-slate-400 light:text-slate-500 italic max-w-[150px] truncate">${row.CATATAN || '-'}</td>
+                        <td class="p-3.5 text-center">${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Table Sorting
+        function sortTable(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            applyFilters();
+        }
+
+        function sortDataArray(arr, column, direction) {
+            arr.sort((a, b) => {
+                let valA = a[column] || '';
+                let valB = b[column] || '';
+
+                if (column === 'BIL_HARI') {
+                    valA = parseInt(valA) || 0;
+                    valB = parseInt(valB) || 0;
+                }
+
+                if (valA < valB) return direction === 'asc' ? -1 : 1;
+                if (valA > valB) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // Render Chart.js Visualizations
+        function renderCharts() {
+            const isDark = currentTheme === 'dark';
+            const textColor = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.8)';
+
+            Chart.defaults.color = textColor;
+            Chart.defaults.font.family = 'Inter';
+
+            // 1. Chart Subject Papers Bar Chart
+            const subjectCounts = {};
+            filteredData.forEach(d => {
+                subjectCounts[d.SUBJEK] = (subjectCounts[d.SUBJEK] || 0) + 1;
+            });
+
+            if (charts.subject) charts.subject.destroy();
+            const ctxSubject = document.getElementById('chartSubjectPapers').getContext('2d');
+            charts.subject = new Chart(ctxSubject, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(subjectCounts),
+                    datasets: [{
+                        label: 'Bilangan Kertas',
+                        data: Object.values(subjectCounts),
+                        backgroundColor: '#00e5ff',
+                        borderRadius: 6,
+                        hoverBackgroundColor: '#38bdf8'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: textColor } },
+                        y: { grid: { color: gridColor }, ticks: { stepSize: 1, color: textColor } }
+                    }
+                }
+            });
+
+            // 2. Chart Day Distribution Doughnut
+            const dayCounts = {};
+            filteredData.forEach(d => {
+                dayCounts[d.HARI] = (dayCounts[d.HARI] || 0) + 1;
+            });
+
+            if (charts.day) charts.day.destroy();
+            const ctxDay = document.getElementById('chartDayDistribution').getContext('2d');
+            charts.day = new Chart(ctxDay, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dayCounts),
+                    datasets: [{
+                        data: Object.values(dayCounts),
+                        backgroundColor: ['#00e5ff', '#f59e0b', '#8b5cf6', '#10b981', '#ec4899', '#3b82f6'],
+                        borderWidth: isDark ? 2 : 1,
+                        borderColor: isDark ? '#1e293b' : '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, color: textColor } }
+                    }
+                }
+            });
+
+            // 3. Chart Venue Distribution Polar Area
+            const venueCounts = {};
+            filteredData.forEach(d => {
+                venueCounts[d.TEMPAT] = (venueCounts[d.TEMPAT] || 0) + 1;
+            });
+
+            if (charts.venue) charts.venue.destroy();
+            const ctxVenue = document.getElementById('chartVenueDistribution').getContext('2d');
+            charts.venue = new Chart(ctxVenue, {
+                type: 'polarArea',
+                data: {
+                    labels: Object.keys(venueCounts),
+                    datasets: [{
+                        data: Object.values(venueCounts),
+                        backgroundColor: ['rgba(139, 92, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(0, 229, 255, 0.7)']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: textColor } } },
+                    scales: { r: { grid: { color: gridColor }, ticks: { display: false } } }
+                }
+            });
+
+            // 4. Chart Time Breakdown (Morning vs Afternoon)
+            let morningCount = 0;
+            let afternoonCount = 0;
+            filteredData.forEach(d => {
+                const hour = parseInt((d.MASA_MULA || '08:00').split(/[:\.]/)[0], 10) || 8;
+                if (hour < 12) morningCount++;
+                else afternoonCount++;
+            });
+
+            if (charts.time) charts.time.destroy();
+            const ctxTime = document.getElementById('chartTimeBreakdown').getContext('2d');
+            charts.time = new Chart(ctxTime, {
+                type: 'pie',
+                data: {
+                    labels: ['Sesi Pagi (< 12.00 PM)', 'Sesi Petang (>= 12.00 PM)'],
+                    datasets: [{
+                        data: [morningCount, afternoonCount],
+                        backgroundColor: ['#10b981', '#f59e0b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
+                }
+            });
+        }
+
+        // Modal Popup Logic
+        function openModal(id) {
+            const item = rawTimetableData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('modalSubjekBadge').textContent = item.SUBJEK.toUpperCase();
+            document.getElementById('modalPerkara').textContent = item.PERKARA;
+            document.getElementById('modalHariTarikh').textContent = `${item.HARI}, ${item.TARIKH}`;
+            document.getElementById('modalMasa').textContent = `${item.MASA_MULA} - ${item.MASA_TAMAT}`;
+            document.getElementById('modalKertas').textContent = formatKertasText(item.KERTAS, 'KERTAS ');
+            document.getElementById('modalTempat').textContent = item.TEMPAT;
+            document.getElementById('modalCatatan').textContent = item.CATATAN || 'Tiada catatan khas bagi sesi ini.';
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        // Dark / Light Theme Switcher Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+
+            if (currentTheme === 'dark') {
+                currentTheme = 'light';
+                html.classList.remove('dark');
+                html.classList.add('light');
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black light";
+                themeIcon.className = "fa-solid fa-sun text-amber-500";
+                themeLabel.textContent = "Light Theme";
+            } else {
+                currentTheme = 'dark';
+                html.classList.remove('light');
+                html.classList.add('dark');
+                document.body.className = "bg-pbi-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black dark";
+                themeIcon.className = "fa-solid fa-moon text-amber-400";
+                themeLabel.textContent = "Dark Theme";
+            }
+
+            renderCharts();
+            showToast(`Bertukar ke ${currentTheme.toUpperCase()} Theme`, 'info');
+        }
+
+        // Fullscreen Toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // Export Filtered Table to CSV
+        function exportFilteredDataCSV() {
+            if (filteredData.length === 0) {
+                showToast("Tiada data untuk dieksport", "warning");
+                return;
+            }
+
+            const exportFields = filteredData.map(d => ({
+                HARI: d.HARI,
+                TARIKH: d.TARIKH,
+                MASA_MULA: d.MASA_MULA,
+                MASA_TAMAT: d.MASA_TAMAT,
+                PERKARA: d.PERKARA,
+                SUBJEK: d.SUBJEK,
+                KERTAS: d.KERTAS,
+                BIL_HARI: d.BIL_HARI,
+                TEMPAT: d.TEMPAT,
+                CATATAN: d.CATATAN
+            }));
+
+            const csvString = Papa.unparse(exportFields);
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Jadual_Peperiksaan_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Eksport CSV berjaya dimuat turun!", "success");
+        }
+
+        // Toast Messages Helper
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = msg;
+
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+            } else if (type === 'warning') {
+                toastIcon.className = 'fa-solid fa-triangle-exclamation text-amber-400 text-lg';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-info text-cyan-400 text-lg';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Top Notice Banner Helper
+        function showNotice(msg, type = 'info') {
+            const banner = document.getElementById('noticeBanner');
+            const text = document.getElementById('noticeBannerText');
+            text.textContent = msg;
+            banner.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
