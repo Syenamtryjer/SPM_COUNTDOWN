@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power BI Analytics - Jadual Peperiksaan</title>
+    <title>Road To Success - Jadual Peperiksaan</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,18 +36,11 @@
         }
     </script>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- PapaParse for robust CSV Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -57,7 +49,6 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Custom Scrollbar for Power BI Feel */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -76,7 +67,6 @@
             background: #64748b;
         }
 
-        /* Power BI Tile Effect */
         .pbi-tile {
             position: relative;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -100,7 +90,6 @@
         .tile-green::before { background-color: #10b981; }
         .tile-blue::before { background-color: #3b82f6; }
 
-        /* Glowing pulses */
         @keyframes pulse-teal {
             0%, 100% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
             50% { box-shadow: 0 0 25px rgba(0, 229, 255, 0.4); }
@@ -112,11 +101,9 @@
 </head>
 <body class="bg-pbi-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
 
-    <!-- Top Header Navigation Bar -->
     <header class="bg-slate-900/90 dark:bg-slate-900/90 light:bg-white border-b border-slate-800 dark:border-slate-800 light:border-slate-200 sticky top-0 z-50 backdrop-blur-md px-4 py-3">
         <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
             
-            <!-- Logo & Brand Title -->
             <div class="flex items-center space-x-3">
                 <div class="bg-gradient-to-tr from-cyan-500 via-blue-600 to-amber-400 p-2.5 rounded-xl shadow-lg flex items-center justify-center">
                     <i class="fa-solid fa-chart-column text-slate-950 text-xl font-bold"></i>
@@ -124,7 +111,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="font-bold text-lg md:text-xl tracking-tight text-white light:text-slate-900">
-                            Power BI Analytics
+                            Road To Success
                         </h1>
                         <span class="text-xs bg-cyan-500/20 text-cyan-400 font-mono px-2 py-0.5 rounded border border-cyan-500/30 font-semibold">
                             PRO DASHBOARD
@@ -137,7 +124,6 @@
                 </div>
             </div>
 
-            <!-- Live Status & Sheet Info -->
             <div class="hidden lg:flex items-center gap-3 bg-slate-800/80 light:bg-slate-100 px-3.5 py-1.5 rounded-lg border border-slate-700/60 light:border-slate-300 text-xs">
                 <div class="flex items-center gap-2">
                     <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -147,21 +133,17 @@
                 <span class="text-slate-400 light:text-slate-500" id="lastUpdatedTime">Kemaskini Terkini: Tepat Sekarang</span>
             </div>
 
-            <!-- Header Action Controls -->
             <div class="flex items-center gap-2">
-                <!-- Theme Toggle Button -->
                 <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-lg bg-slate-800 light:bg-slate-100 text-slate-300 light:text-slate-700 hover:bg-slate-700 light:hover:bg-slate-200 transition border border-slate-700 light:border-slate-300 flex items-center gap-2 text-xs font-semibold" title="Tukar Tema (Light/Dark)">
                     <i class="fa-solid fa-moon text-amber-400" id="themeIcon"></i>
                     <span id="themeLabel" class="hidden sm:inline">Dark Theme</span>
                 </button>
 
-                <!-- Refresh Sheet Data Button -->
                 <button onclick="fetchSheetData()" class="p-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold transition flex items-center gap-2 text-xs shadow-md shadow-cyan-900/30" title="Muat Semula Data dari Google Sheet">
                     <i class="fa-solid fa-rotate text-sm" id="refreshIcon"></i>
-                    <span class="hidden sm:inline">Refresh Sheet</span>
+                    <span class="hidden sm:inline">Refresh</span>
                 </button>
 
-                <!-- Fullscreen Button -->
                 <button onclick="toggleFullscreen()" class="p-2.5 rounded-lg bg-slate-800 light:bg-slate-100 text-slate-300 light:text-slate-700 hover:bg-slate-700 light:hover:bg-slate-200 transition border border-slate-700 light:border-slate-300" title="Skrin Penuh">
                     <i class="fa-solid fa-expand"></i>
                 </button>
@@ -169,10 +151,8 @@
         </div>
     </header>
 
-    <!-- Main Dashboard Body -->
     <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 space-y-6">
 
-        <!-- Top Notification Banner if Sync Failed/Fallback Used -->
         <div id="noticeBanner" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 p-3 rounded-xl flex items-center justify-between text-xs sm:text-sm">
             <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base"></i>
@@ -183,10 +163,9 @@
             </button>
         </div>
 
-        <!-- 1. KPI Metric Cards Bar (Power BI Card Visuals) -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             
-            <!-- Metric 1: Jumlah Peperiksaan SPM (Jumlah, Selesai, Belum Selesai) -->
+            <!-- Metric 1: PEPERIKSAAN SPM (Global Unfiltered) -->
             <div class="pbi-tile tile-teal bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between">
@@ -238,7 +217,7 @@
                 </p>
             </div>
 
-            <!-- Metric 4: Sesi Akan Datang / Selesai -->
+            <!-- Metric 4: STATUS SESI (Global Unfiltered) -->
             <div class="pbi-tile tile-green bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md">
                 <div class="flex items-center justify-between">
                     <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">STATUS SESI</span>
@@ -256,7 +235,7 @@
                 </p>
             </div>
 
-            <!-- Metric 5: Kiraan Detik Kertas/Sesi Seterusnya -->
+            <!-- Metric 5: SESI NEXT COUNTDOWN -->
             <div class="pbi-tile tile-blue bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md glow-active">
                 <div class="flex items-center justify-between">
                     <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">SESI NEXT COUNTDOWN</span>
@@ -273,7 +252,6 @@
 
         </section>
 
-        <!-- 2. Power BI Slicers & Filter Controls Bar -->
         <section class="bg-slate-800/90 light:bg-white p-4 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 light:border-slate-200 pb-3">
                 <div class="flex items-center gap-2">
@@ -289,19 +267,31 @@
                 </div>
             </div>
 
-            <!-- Filter Inputs Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <!-- Filter Inputs Grid in user requested order: Carian Teks, Dari Tarikh, Hingga Tarikh, Pilih Subjek, Jenis / Perkara, Status Sesi, Pilih Tempat -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
                 
-                <!-- Search Filter -->
+                <!-- 1. Carian Teks -->
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Carian Teks / Subjek</label>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Carian Teks / Subjek / Sidang</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Cari subjek, tempat..." class="w-full pl-8 pr-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Cari subjek, sidang..." class="w-full pl-8 pr-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                     </div>
                 </div>
 
-                <!-- Subjek Filter -->
+                <!-- 2. Dari Tarikh -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Tarikh Mula (Dari)</label>
+                    <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                </div>
+
+                <!-- 3. Hingga Tarikh -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Tarikh Akhir (Hingga)</label>
+                    <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                </div>
+
+                <!-- 4. Pilih Subjek -->
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Subjek</label>
                     <select id="filterSubject" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
@@ -309,34 +299,7 @@
                     </select>
                 </div>
 
-                <!-- Hari Filter -->
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Hari</label>
-                    <select id="filterDay" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
-                        <option value="ALL">Semua Hari</option>
-                    </select>
-                </div>
-
-                <!-- Tempat Filter -->
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Tempat</label>
-                    <select id="filterVenue" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
-                        <option value="ALL">Semua Tempat</option>
-                    </select>
-                </div>
-
-                <!-- Status Filter -->
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Status Sesi</label>
-                    <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
-                        <option value="ALL">Semua Status</option>
-                        <option value="AKAN_DATANG" selected>Akan Datang</option>
-                        <option value="HARI_INI">Hari Ini</option>
-                        <option value="SELESAI">Selesai</option>
-                    </select>
-                </div>
-
-                <!-- Perkara / Jenis Filter -->
+                <!-- 5. Jenis / Perkara -->
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Jenis / Perkara</label>
                     <select id="filterCategory" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
@@ -347,13 +310,30 @@
                     </select>
                 </div>
 
+                <!-- 6. Status Sesi (Default Akan Datang) -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Status Sesi</label>
+                    <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Status</option>
+                        <option value="AKAN_DATANG" selected>Akan Datang</option>
+                        <option value="HARI_INI">Hari Ini</option>
+                        <option value="SELESAI">Selesai</option>
+                    </select>
+                </div>
+
+                <!-- 7. Pilih Tempat -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Tempat</label>
+                    <select id="filterVenue" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <option value="ALL">Semua Tempat</option>
+                    </select>
+                </div>
+
             </div>
         </section>
 
-        <!-- 3. Power BI Interactive Data Grid Table (Moved directly under Slicers & Filters) -->
         <section class="bg-slate-800/90 light:bg-white rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-xl overflow-hidden">
             
-            <!-- Table Header Bar -->
             <div class="p-4 border-b border-slate-700 light:border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-800 light:bg-slate-50">
                 <div class="flex items-center gap-2.5">
                     <i class="fa-solid fa-table text-cyan-400 text-lg"></i>
@@ -365,7 +345,6 @@
 
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-slate-400 mr-2" id="tableRecordCounter">Menunjukkan 0 rekod</span>
-                    <!-- Export to CSV Button -->
                     <button onclick="exportFilteredDataCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-file-excel"></i>
                         <span>Eksport CSV</span>
@@ -373,10 +352,10 @@
                 </div>
             </div>
 
-            <!-- Responsive Table Container -->
-            <div class="overflow-x-auto">
+            <!-- Scrollable container restricted to approx 10 rows height (~420px) -->
+            <div class="max-h-[420px] overflow-y-auto overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-900/80 light:bg-slate-100 text-slate-300 light:text-slate-700 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-200">
+                    <thead class="bg-slate-900/90 light:bg-slate-100 text-slate-300 light:text-slate-700 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-200 sticky top-0 z-10 backdrop-blur-sm">
                         <tr>
                             <th onclick="sortTable('BIL_HARI')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
                                 Bil Hari <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
@@ -396,6 +375,9 @@
                             <th onclick="sortTable('KERTAS')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
                                 Ujian / Kertas <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
                             </th>
+                            <th onclick="sortTable('SIDANG')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
+                                Sidang <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
+                            </th>
                             <th onclick="sortTable('PERKARA')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
                                 Perkara / Tajuk <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
                             </th>
@@ -412,7 +394,6 @@
                 </table>
             </div>
 
-            <!-- Table Empty State -->
             <div id="tableEmptyState" class="hidden p-12 text-center text-slate-400 light:text-slate-500">
                 <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-40"></i>
                 <p class="font-semibold text-sm">Tiada rekod ditemui berdasarkan penapis anda.</p>
@@ -421,10 +402,8 @@
 
         </section>
 
-        <!-- 4. Power BI Interactive Visual Charts Grid -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            <!-- Chart 1: Agihan Kertas Mengikut Subjek -->
             <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
                 <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
                     <div class="flex items-center gap-2">
@@ -438,7 +417,6 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Taburan Sesi Mengikut Hari -->
             <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
                 <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
                     <div class="flex items-center gap-2">
@@ -452,7 +430,6 @@
                 </div>
             </div>
 
-            <!-- Chart 3: Agihan Sesi Mengikut Tempat -->
             <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
                 <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
                     <div class="flex items-center gap-2">
@@ -466,7 +443,6 @@
                 </div>
             </div>
 
-            <!-- Chart 4: Masa Mula Ujian Breakdown -->
             <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
                 <div class="flex items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-4">
                     <div class="flex items-center gap-2">
@@ -484,7 +460,6 @@
 
     </main>
 
-    <!-- Detail Modal Popup for Exam Paper -->
     <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 light:bg-white border border-slate-700 light:border-slate-300 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
             
@@ -518,11 +493,16 @@
                 </div>
 
                 <div class="bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
-                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Kod Kertas</span>
+                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Ujian / Kertas</span>
                     <span id="modalKertas" class="text-cyan-400 font-mono font-bold text-sm">KERTAS 1</span>
                 </div>
 
                 <div class="bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
+                    <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Sidang Kumpulan</span>
+                    <span id="modalSidang" class="text-purple-400 font-mono font-bold text-sm">SIDANG 1</span>
+                </div>
+
+                <div class="col-span-2 bg-slate-800/60 light:bg-slate-100 p-2.5 rounded-lg">
                     <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase">Tempat / Lokasi</span>
                     <span id="modalTempat" class="text-amber-400 font-bold text-sm">Dewan Peperiksaan</span>
                 </div>
@@ -542,24 +522,20 @@
         </div>
     </div>
 
-    <!-- Toast Notification Popup -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 light:bg-slate-900 text-white border border-slate-700 shadow-2xl rounded-xl p-4 flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-300 z-50">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toastMessage" class="text-xs font-medium">Message text</span>
     </div>
 
     <script>
-        // Google Sheet Published CSV Link from user prompt
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnQGkvEeyBKsnp4rJQSgck_hQL0aK8z6TKVn8bSSAa3Y9GoOq6cUX3TRWe7NCh5aRfsa8qEjxOEmjq/pub?output=csv";
 
-        // Global State Variables
         let rawTimetableData = [];
         let filteredData = [];
         let charts = {};
         let currentSort = { column: 'BIL_HARI', direction: 'asc' };
         let currentTheme = 'dark';
 
-        // Robust Date & Time Parser supporting DD/MM/YYYY, YYYY-MM-DD, and various time formats
         function parseDateTime(dateStr, timeStr) {
             if (!dateStr) return new Date(NaN);
             let year = 2026, month = 0, day = 1;
@@ -570,12 +546,10 @@
 
             if (dateParts.length === 3) {
                 if (dateParts[0].length === 4) {
-                    // YYYY-MM-DD
                     year = parseInt(dateParts[0], 10);
                     month = parseInt(dateParts[1], 10) - 1;
                     day = parseInt(dateParts[2], 10);
                 } else {
-                    // DD/MM/YYYY or D/M/YYYY
                     day = parseInt(dateParts[0], 10);
                     month = parseInt(dateParts[1], 10) - 1;
                     year = parseInt(dateParts[2], 10);
@@ -603,22 +577,19 @@
             return new Date(year, month, day, hours, minutes, 0);
         }
 
-        // Sample / Fallback Data in case CORS/Offline issue happens
         const fallbackSampleData = [
-            { HARI: "ISNIN", TARIKH: "2026-09-07", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Bahasa Melayu Kertas 1", SUBJEK: "Bahasa Melayu", KERTAS: "1", BIL_HARI: "1", TEMPAT: "Dewan Utama", CATATAN: "Pensel 2B & Kad Pengenalan" },
-            { HARI: "SELASA", TARIKH: "2026-09-08", MASA_MULA: "08:00", MASA_TAMAT: "12:00", PERKARA: "Seminar Intensif Matematik", SUBJEK: "Matematik", KERTAS: "1", BIL_HARI: "2", TEMPAT: "Dewan Utama", CATATAN: "Bawa Kalkulator & Nota" },
-            { HARI: "RABU", TARIKH: "2026-09-09", MASA_MULA: "08:00", MASA_TAMAT: "10:15", PERKARA: "SPM Bahasa Inggeris Paper 1", SUBJEK: "Bahasa Inggeris", KERTAS: "1", BIL_HARI: "3", TEMPAT: "Dewan Utama", CATATAN: "Reading & Use of English" },
-            { HARI: "KHAMIS", TARIKH: "2026-11-26", MASA_MULA: "08:00", MASA_TAMAT: "10:00", PERKARA: "SPM Sejarah Kertas 1 & 2", SUBJEK: "Sejarah", KERTAS: "1 & 2", BIL_HARI: "4", TEMPAT: "Dewan Utama", CATATAN: "Kemaskini nota ringkas" },
-            { HARI: "JUMAAT", TARIKH: "2026-11-27", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Sains / Fizik Kertas 1", SUBJEK: "Sains", KERTAS: "1", BIL_HARI: "5", TEMPAT: "Makmal Sains A", CATATAN: "Bawa pembaris & pemadam" }
+            { HARI: "ISNIN", TARIKH: "2026-09-07", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Bahasa Melayu Kertas 1", SUBJEK: "Bahasa Melayu", KERTAS: "1", SIDANG: "-", BIL_HARI: "1", TEMPAT: "Dewan Utama", CATATAN: "Pensel 2B & Kad Pengenalan" },
+            { HARI: "SELASA", TARIKH: "2026-09-08", MASA_MULA: "08:00", MASA_TAMAT: "12:00", PERKARA: "Seminar Intensif Matematik", SUBJEK: "Matematik", KERTAS: "1", SIDANG: "-", BIL_HARI: "2", TEMPAT: "Dewan Utama", CATATAN: "Bawa Kalkulator & Nota" },
+            { HARI: "RABU", TARIKH: "2026-09-09", MASA_MULA: "08:00", MASA_TAMAT: "10:15", PERKARA: "SPM Bahasa Inggeris Paper 1", SUBJEK: "Bahasa Inggeris", KERTAS: "1", SIDANG: "-", BIL_HARI: "3", TEMPAT: "Dewan Utama", CATATAN: "Reading & Use of English" },
+            { HARI: "KHAMIS", TARIKH: "2026-11-26", MASA_MULA: "08:00", MASA_TAMAT: "10:00", PERKARA: "SPM Sejarah Kertas 1 & 2", SUBJEK: "Sejarah", KERTAS: "1 & 2", SIDANG: "-", BIL_HARI: "4", TEMPAT: "Dewan Utama", CATATAN: "Kemaskini nota ringkas" },
+            { HARI: "JUMAAT", TARIKH: "2026-11-27", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Sains / Fizik Kertas 1", SUBJEK: "Sains", KERTAS: "1", SIDANG: "-", BIL_HARI: "5", TEMPAT: "Makmal Sains A", CATATAN: "Bawa pembaris & pemadam" }
         ];
 
-        // Main initialization on window load
         window.addEventListener('DOMContentLoaded', () => {
             fetchSheetData();
             startCountdownTimer();
         });
 
-        // Function to fetch and parse Google Sheet CSV
         async function fetchSheetData() {
             const refreshIcon = document.getElementById('refreshIcon');
             const syncDot = document.getElementById('syncStatusDot');
@@ -667,7 +638,6 @@
             }
         }
 
-        // Helper function to normalize headers and field values
         function processRawCSVData(data) {
             return data.map((item, idx) => {
                 const getItem = (key) => {
@@ -684,6 +654,7 @@
                     PERKARA: getItem('PERKARA') || getItem('SUBJEK') || `Sesi Ujian ${idx + 1}`,
                     SUBJEK: getItem('SUBJEK') || getItem('PERKARA') || 'Subjek Umum',
                     KERTAS: getItem('KERTAS') || '1',
+                    SIDANG: getItem('SIDANG') || '-',
                     BIL_HARI: getItem('BIL_HARI') || `${idx + 1}`,
                     TEMPAT: getItem('TEMPAT') || 'Dewan Peperiksaan',
                     CATATAN: getItem('CATATAN') || 'Tiada catatan'
@@ -691,13 +662,11 @@
             });
         }
 
-        // Helper function to format Kertas display text
         function formatKertasText(kertas, prefix = 'Kertas ') {
             if (!kertas) return '-';
             const clean = String(kertas).trim();
             const upper = clean.toUpperCase();
 
-            // Direct display for UTQH, MENDENGAR, BERTUTUR or if already has KERTAS
             if (upper.includes('UTQH') || upper.includes('MENDENGAR') || upper.includes('BERTUTUR')) {
                 return clean;
             }
@@ -707,33 +676,25 @@
             return `${prefix}${clean}`;
         }
 
-        // Initialize/Re-render Dashboard Components
         function initDashboard() {
             populateFilterDropdowns();
             applyFilters();
         }
 
-        // Populate Dropdown Slicers (Subjek, Hari, Tempat)
         function populateFilterDropdowns() {
             const subjectSelect = document.getElementById('filterSubject');
-            const daySelect = document.getElementById('filterDay');
             const venueSelect = document.getElementById('filterVenue');
 
             const subjects = [...new Set(rawTimetableData.map(d => d.SUBJEK))].filter(Boolean).sort();
-            const days = [...new Set(rawTimetableData.map(d => d.HARI))].filter(Boolean);
             const venues = [...new Set(rawTimetableData.map(d => d.TEMPAT))].filter(Boolean).sort();
 
             subjectSelect.innerHTML = '<option value="ALL">Semua Subjek</option>' + 
                 subjects.map(s => `<option value="${s}">${s}</option>`).join('');
 
-            daySelect.innerHTML = '<option value="ALL">Semua Hari</option>' + 
-                days.map(d => `<option value="${d}">${d}</option>`).join('');
-
             venueSelect.innerHTML = '<option value="ALL">Semua Tempat</option>' + 
                 venues.map(v => `<option value="${v}">${v}</option>`).join('');
         }
 
-        // Determine Status of Session accurately
         function getItemStatus(itemDateStr, todayStr) {
             if (!itemDateStr) return 'AKAN_DATANG';
             const itemDate = parseDateTime(itemDateStr, '00:00');
@@ -749,11 +710,11 @@
             return 'AKAN_DATANG';
         }
 
-        // Apply All Active Filters
         function applyFilters() {
             const searchText = document.getElementById('filterSearch').value.toLowerCase();
             const selectedSubject = document.getElementById('filterSubject').value;
-            const selectedDay = document.getElementById('filterDay').value;
+            const startDateVal = document.getElementById('filterStartDate').value;
+            const endDateVal = document.getElementById('filterEndDate').value;
             const selectedVenue = document.getElementById('filterVenue').value;
             const selectedStatus = document.getElementById('filterStatus').value;
             const selectedCategory = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : 'ALL';
@@ -761,7 +722,8 @@
             let activeFilterCount = 0;
             if (searchText) activeFilterCount++;
             if (selectedSubject !== 'ALL') activeFilterCount++;
-            if (selectedDay !== 'ALL') activeFilterCount++;
+            if (startDateVal) activeFilterCount++;
+            if (endDateVal) activeFilterCount++;
             if (selectedVenue !== 'ALL') activeFilterCount++;
             if (selectedStatus !== 'ALL') activeFilterCount++;
             if (selectedCategory !== 'ALL') activeFilterCount++;
@@ -770,17 +732,36 @@
 
             const todayStr = new Date().toISOString().split('T')[0];
 
-            // Filter context for KPI calculation (Filters by search, subject, day, venue, category EXCEPT status filter)
-            const kpiBaseData = rawTimetableData.filter(item => {
+            // Filtered data for Table & Charts
+            filteredData = rawTimetableData.filter(item => {
                 const matchesSearch = !searchText || 
                     item.SUBJEK.toLowerCase().includes(searchText) ||
                     item.PERKARA.toLowerCase().includes(searchText) ||
                     item.TEMPAT.toLowerCase().includes(searchText) ||
-                    item.CATATAN.toLowerCase().includes(searchText);
+                    item.CATATAN.toLowerCase().includes(searchText) ||
+                    item.SIDANG.toLowerCase().includes(searchText);
 
                 const matchesSubject = selectedSubject === 'ALL' || item.SUBJEK === selectedSubject;
-                const matchesDay = selectedDay === 'ALL' || item.HARI === selectedDay;
                 const matchesVenue = selectedVenue === 'ALL' || item.TEMPAT === selectedVenue;
+
+                let matchesDateRange = true;
+                const itemDateObj = parseDateTime(item.TARIKH, '00:00');
+                const itemTime = !isNaN(itemDateObj.getTime()) ? new Date(itemDateObj.getFullYear(), itemDateObj.getMonth(), itemDateObj.getDate()).getTime() : null;
+
+                if (startDateVal) {
+                    const startDateObj = new Date(startDateVal);
+                    const startTime = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate()).getTime();
+                    if (itemTime !== null && itemTime < startTime) {
+                        matchesDateRange = false;
+                    }
+                }
+                if (endDateVal) {
+                    const endDateObj = new Date(endDateVal);
+                    const endTime = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate()).getTime();
+                    if (itemTime !== null && itemTime > endTime) {
+                        matchesDateRange = false;
+                    }
+                }
 
                 let matchesCategory = true;
                 if (selectedCategory !== 'ALL') {
@@ -794,27 +775,24 @@
                     }
                 }
 
-                return matchesSearch && matchesSubject && matchesDay && matchesVenue && matchesCategory;
-            });
-
-            // Filter for table & visual charts view (Includes status filter)
-            filteredData = kpiBaseData.filter(item => {
                 const itemStatus = getItemStatus(item.TARIKH, todayStr);
-                return selectedStatus === 'ALL' || itemStatus === selectedStatus;
+                const matchesStatus = selectedStatus === 'ALL' || itemStatus === selectedStatus;
+
+                return matchesSearch && matchesSubject && matchesDateRange && matchesVenue && matchesCategory && matchesStatus;
             });
 
             sortDataArray(filteredData, currentSort.column, currentSort.direction);
 
-            updateKPIs(kpiBaseData);
+            updateKPIs();
             renderTable();
             renderCharts();
         }
 
-        // Reset Filters
         function resetFilters() {
             document.getElementById('filterSearch').value = '';
             document.getElementById('filterSubject').value = 'ALL';
-            document.getElementById('filterDay').value = 'ALL';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
             document.getElementById('filterVenue').value = 'ALL';
             document.getElementById('filterStatus').value = 'AKAN_DATANG';
             if (document.getElementById('filterCategory')) {
@@ -824,19 +802,39 @@
             showToast("Penapis diset semula", "info");
         }
 
-        // Update KPI Metric Cards
-        function updateKPIs(kpiData = filteredData) {
+        // Update KPI Metric Cards using rawTimetableData directly (unaffected by slicer filters)
+        function updateKPIs() {
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
 
-            // 1. KERTAS SPM (Jumlah, Telah Selesai, Belum Selesai)
-            const spmPapers = kpiData.filter(d => (d.PERKARA || '').toUpperCase().includes('SPM'));
-            const spmTotal = spmPapers.length;
+            // 1. PEPERIKSAAN SPM (Global Unfiltered - Excluding Trial/Percubaan)
+            const spmPapers = rawTimetableData.filter(d => {
+                const perkara = (d.PERKARA || '').toUpperCase();
+                const isSpm = perkara.includes('SPM');
+                const isTrial = perkara.includes('TRIAL') || perkara.includes('PERCUBAAN') || perkara.includes('PERCOBAAN');
+                return isSpm && !isTrial;
+            });
+            
+            // Get unique SPM papers by combining SUBJEK + KERTAS (preventing multi-sidang inflation)
+            const uniqueSpmMap = new Map();
+            spmPapers.forEach(d => {
+                const key = `${d.SUBJEK}_${d.KERTAS}`;
+                if (!uniqueSpmMap.has(key)) {
+                    uniqueSpmMap.set(key, d);
+                } else {
+                    // If any of the sessions for this paper is not yet completed, prioritize pending status
+                    const existing = uniqueSpmMap.get(key);
+                    if (getItemStatus(d.TARIKH, todayStr) === 'AKAN_DATANG' || getItemStatus(d.TARIKH, todayStr) === 'HARI_INI') {
+                        uniqueSpmMap.set(key, d);
+                    }
+                }
+            });
 
+            const spmTotal = uniqueSpmMap.size;
             let spmCompleted = 0;
             let spmPending = 0;
 
-            spmPapers.forEach(d => {
+            uniqueSpmMap.forEach(d => {
                 const st = getItemStatus(d.TARIKH, todayStr);
                 if (st === 'SELESAI') spmCompleted++;
                 else spmPending++;
@@ -847,7 +845,7 @@
             document.getElementById('kpiSpmPending').textContent = spmPending;
 
             // 2. Subjek Berdaftar
-            const uniqueSubjects = new Set(kpiData.map(d => d.SUBJEK)).size;
+            const uniqueSubjects = new Set(rawTimetableData.map(d => d.SUBJEK)).size;
             document.getElementById('kpiTotalSubjects').textContent = uniqueSubjects;
 
             // 3. COUNTDOWN SPM BERTULIS (23/11/2026)
@@ -857,10 +855,10 @@
             const daysRemaining = Math.max(0, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
             document.getElementById('kpiTotalDays').textContent = daysRemaining;
 
-            // 4. Status Sesi (Akan Datang vs Selesai)
+            // 4. Status Sesi (Global Unaffected by Slicers)
             let upcoming = 0;
             let completed = 0;
-            kpiData.forEach(d => {
+            rawTimetableData.forEach(d => {
                 const st = getItemStatus(d.TARIKH, todayStr);
                 if (st === 'SELESAI') completed++;
                 else upcoming++;
@@ -868,7 +866,7 @@
             document.getElementById('kpiUpcomingCount').textContent = upcoming;
             document.getElementById('kpiCompletedCount').textContent = completed;
 
-            // 5. SESI NEXT COUNTDOWN - Robust date/time parsing
+            // 5. SESI NEXT COUNTDOWN
             const nowMs = now.getTime();
 
             const upcomingSessions = rawTimetableData
@@ -895,7 +893,7 @@
                 const nextSess = upcomingSessions[0];
                 const item = nextSess.item;
                 
-                document.getElementById('kpiNextSubject').textContent = `${item.SUBJEK} (${item.PERKARA})`;
+                document.getElementById('kpiNextSubject').textContent = `${item.SUBJEK} (${item.PERKARA}) ${item.SIDANG !== '-' ? '['+item.SIDANG+']' : ''}`;
                 document.getElementById('kpiNextDetails').textContent = `${item.HARI}, ${item.TARIKH} @ ${item.TEMPAT}`;
                 
                 window.nextSessionTargetDate = nextSess.startDate;
@@ -908,7 +906,6 @@
             }
         }
 
-        // Live Countdown Timer
         function startCountdownTimer() {
             setInterval(() => {
                 const timerEl = document.getElementById('kpiCountdownTimer');
@@ -946,7 +943,6 @@
             }, 1000);
         }
 
-        // Render Table Data
         function renderTable() {
             const tbody = document.getElementById('timetableBody');
             const emptyState = document.getElementById('tableEmptyState');
@@ -989,7 +985,8 @@
                         <td class="p-3.5 font-mono">
                             <span class="bg-slate-700 light:bg-slate-200 text-slate-200 light:text-slate-800 px-2 py-0.5 rounded text-[10px] font-semibold">${formatKertasText(row.KERTAS, 'Kertas ')}</span>
                         </td>
-                        <td class="p-3.5 text-slate-300 light:text-slate-700 max-w-[200px] truncate">${row.PERKARA}</td>
+                        <td class="p-3.5 font-mono text-purple-400 font-semibold">${row.SIDANG}</td>
+                        <td class="p-3.5 text-slate-300 light:text-slate-700 max-w-[180px] truncate">${row.PERKARA}</td>
                         <td class="p-3.5 text-slate-300 light:text-slate-700 font-medium">
                             <i class="fa-solid fa-location-dot text-slate-400 mr-1 text-[10px]"></i>${row.TEMPAT}
                         </td>
@@ -1000,7 +997,6 @@
             }).join('');
         }
 
-        // Table Sorting
         function sortTable(column) {
             if (currentSort.column === column) {
                 currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
@@ -1027,7 +1023,6 @@
             });
         }
 
-        // Render Chart.js Visualizations
         function renderCharts() {
             const isDark = currentTheme === 'dark';
             const textColor = isDark ? '#94a3b8' : '#475569';
@@ -1036,7 +1031,6 @@
             Chart.defaults.color = textColor;
             Chart.defaults.font.family = 'Inter';
 
-            // 1. Chart Subject Papers Bar Chart
             const subjectCounts = {};
             filteredData.forEach(d => {
                 subjectCounts[d.SUBJEK] = (subjectCounts[d.SUBJEK] || 0) + 1;
@@ -1067,7 +1061,6 @@
                 }
             });
 
-            // 2. Chart Day Distribution Doughnut
             const dayCounts = {};
             filteredData.forEach(d => {
                 dayCounts[d.HARI] = (dayCounts[d.HARI] || 0) + 1;
@@ -1095,7 +1088,6 @@
                 }
             });
 
-            // 3. Chart Venue Distribution Polar Area
             const venueCounts = {};
             filteredData.forEach(d => {
                 venueCounts[d.TEMPAT] = (venueCounts[d.TEMPAT] || 0) + 1;
@@ -1120,7 +1112,6 @@
                 }
             });
 
-            // 4. Chart Time Breakdown (Morning vs Afternoon)
             let morningCount = 0;
             let afternoonCount = 0;
             filteredData.forEach(d => {
@@ -1148,7 +1139,6 @@
             });
         }
 
-        // Modal Popup Logic
         function openModal(id) {
             const item = rawTimetableData.find(d => d.id === id);
             if (!item) return;
@@ -1158,6 +1148,7 @@
             document.getElementById('modalHariTarikh').textContent = `${item.HARI}, ${item.TARIKH}`;
             document.getElementById('modalMasa').textContent = `${item.MASA_MULA} - ${item.MASA_TAMAT}`;
             document.getElementById('modalKertas').textContent = formatKertasText(item.KERTAS, 'KERTAS ');
+            document.getElementById('modalSidang').textContent = item.SIDANG;
             document.getElementById('modalTempat').textContent = item.TEMPAT;
             document.getElementById('modalCatatan').textContent = item.CATATAN || 'Tiada catatan khas bagi sesi ini.';
 
@@ -1168,7 +1159,6 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        // Dark / Light Theme Switcher Logic
         function toggleTheme() {
             const html = document.documentElement;
             const themeIcon = document.getElementById('themeIcon');
@@ -1194,7 +1184,6 @@
             showToast(`Bertukar ke ${currentTheme.toUpperCase()} Theme`, 'info');
         }
 
-        // Fullscreen Toggle
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => console.log(err));
@@ -1203,7 +1192,6 @@
             }
         }
 
-        // Export Filtered Table to CSV
         function exportFilteredDataCSV() {
             if (filteredData.length === 0) {
                 showToast("Tiada data untuk dieksport", "warning");
@@ -1218,6 +1206,7 @@
                 PERKARA: d.PERKARA,
                 SUBJEK: d.SUBJEK,
                 KERTAS: d.KERTAS,
+                SIDANG: d.SIDANG,
                 BIL_HARI: d.BIL_HARI,
                 TEMPAT: d.TEMPAT,
                 CATATAN: d.CATATAN
@@ -1228,7 +1217,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.setAttribute('href', url);
-            link.setAttribute('download', `Jadual_Peperiksaan_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `Road_To_Success_Export_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1236,7 +1225,6 @@
             showToast("Eksport CSV berjaya dimuat turun!", "success");
         }
 
-        // Toast Messages Helper
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
@@ -1258,7 +1246,6 @@
             }, 3000);
         }
 
-        // Top Notice Banner Helper
         function showNotice(msg, type = 'info') {
             const banner = document.getElementById('noticeBanner');
             const text = document.getElementById('noticeBannerText');
