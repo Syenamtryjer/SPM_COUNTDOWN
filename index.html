@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Road To Success - Jadual Peperiksaan</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -35,7 +35,7 @@
             }
         }
     </script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -427,114 +427,49 @@
                 </div>
             </div>
 
+            <!-- LOKASI PEPERIKSAAN & NAVIGASI PETA -->
             <div class="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-lg flex flex-col justify-between">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3 mb-3">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-amber-500 dark:text-amber-400"></i>
-                        <h3 class="font-bold text-sm tracking-wide text-slate-900 dark:text-white">Kepadatan Sesi mengikut Hari</h3>
+                        <i class="fa-solid fa-map-location-dot text-amber-500 dark:text-amber-400"></i>
+                        <h3 class="font-bold text-sm tracking-wide text-slate-900 dark:text-white">Lokasi Peperiksaan & Navigasi Peta</h3>
                     </div>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Doughnut Visual</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="resetMapLocation()" class="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-mono" title="Set semula peta ke pusat Maahad Tahfiz At-Tayyibah">
+                            <i class="fa-solid fa-arrows-to-dot"></i>
+                            <span>Reset Peta</span>
+                        </button>
+                        <a href="https://maps.app.goo.gl/nhYpicns3pEpyv1H9" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-mono">
+                            <span>Peta Penuh</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                    </div>
                 </div>
-                <div class="relative min-h-[260px] flex-1">
-                    <canvas id="chartDayDistribution"></canvas>
+                <div class="relative w-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/80 shadow-inner flex-1 min-h-[200px]">
+                    <iframe 
+                        id="mapIframe"
+                        title="Lokasi Peperiksaan Google Maps"
+                        src="https://maps.google.com/maps?q=MAAHAD+TAHFIZ+AT-TAYYIBAH+Kampung+Sungai+Buah+Dengkil&t=k&z=17&ie=UTF8&iwloc=&output=embed" 
+                        class="w-full h-full min-h-[200px] border-0" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
                 </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-lg flex flex-col justify-between">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+                <div class="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i class="fa-solid fa-school text-cyan-600 dark:text-cyan-400 text-sm shrink-0"></i>
+                        <span class="font-bold text-slate-800 dark:text-slate-200 truncate">Maahad Tahfiz At-Tayyibah</span>
+                    </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-location-dot text-purple-600 dark:text-purple-400"></i>
-                        <h3 class="font-bold text-sm tracking-wide text-slate-900 dark:text-white">Agihan Sesi mengikut Tempat / Lokasi</h3>
-                    </div>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Polar Area</span>
-                </div>
-                <div class="relative min-h-[260px] flex-1">
-                    <canvas id="chartVenueDistribution"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-lg flex flex-col justify-between">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-business-time text-emerald-600 dark:text-emerald-400"></i>
-                        <h3 class="font-bold text-sm tracking-wide text-slate-900 dark:text-white">Slot Masa Peperiksaan (Sesi Pagi vs Petang)</h3>
-                    </div>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Time Breakdown</span>
-                </div>
-                <div class="relative min-h-[260px] flex-1">
-                    <canvas id="chartTimeBreakdown"></canvas>
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-    <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] flex flex-col overflow-hidden">
-            
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white text-lg p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/50 z-20 transition" title="Tutup">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <!-- VIEW 1: OVERALL EXAM SUMMARY VIEW -->
-            <div id="modalMainView" class="space-y-4 overflow-y-auto pr-1 flex-1">
-                <div class="flex items-center gap-3 shrink-0">
-                    <div class="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 p-3 rounded-xl border border-cyan-500/30">
-                        <i class="fa-solid fa-book-bookmark text-2xl"></i>
-                    </div>
-                    <div>
-                        <span id="modalSubjekBadge" class="text-xs font-mono bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded font-semibold uppercase">
-                            SUBJEK
-                        </span>
-                        <h3 id="modalPerkara" class="text-xl font-bold text-slate-900 dark:text-white mt-1">
-                            Nama Perkara / Tajuk
-                        </h3>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-slate-100 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                        <span class="text-slate-500 dark:text-slate-400 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh</span>
-                        <span id="modalHariTarikh" class="text-slate-800 dark:text-slate-100 font-bold text-sm">ISNIN, 12 JAN</span>
-                    </div>
-
-                    <div class="bg-slate-100 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                        <span class="text-slate-500 dark:text-slate-400 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan</span>
-                        <span id="modalMasa" class="text-slate-800 dark:text-slate-100 font-bold text-sm">08:00 AM - 10:00 AM</span>
-                    </div>
-
-                    <div class="bg-slate-100 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                        <span class="text-slate-500 dark:text-slate-400 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
-                        <span id="modalKertas" class="text-cyan-600 dark:text-cyan-400 font-mono font-bold text-sm">KERTAS 1</span>
-                    </div>
-
-                    <!-- SIDANG KUMPULAN CARD -->
-                    <div class="bg-slate-100 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                        <span class="text-slate-500 dark:text-slate-400 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang Kumpulan</span>
-                        <div id="modalSidangContainer" class="text-slate-800 dark:text-slate-100 font-bold text-sm">
-                            <!-- Rendered dynamically -->
-                        </div>
-                    </div>
-
-                    <div class="sm:col-span-2 bg-slate-100 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                        <span class="text-slate-500 dark:text-slate-400 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi</span>
-                        <div id="modalTempat" class="text-amber-600 dark:text-amber-400 font-bold text-sm">Dewan Peperiksaan</div>
-                    </div>
-
-                    <!-- SENARAI PELAJAR TERLIBAT SECTION -->
-                    <div class="sm:col-span-2 bg-cyan-50 dark:bg-slate-800/40 border border-cyan-200 dark:border-cyan-500/30 p-3.5 rounded-xl">
-                        <span class="text-cyan-700 dark:text-cyan-400 block text-xs font-bold uppercase mb-1.5 flex items-center gap-1.5">
-                            <i class="fa-solid fa-users text-cyan-600 dark:text-cyan-400"></i> Senarai Pelajar Terlibat
-                        </span>
-                        <div id="modalPelajar" class="text-slate-800 dark:text-slate-200 font-medium text-xs leading-relaxed max-h-44 overflow-y-auto pr-1">
-                            -
-                        </div>
-                    </div>
-
-                    <div class="sm:col-span-2 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                        <span class="text-slate-500 dark:text-slate-400 block text-xs font-semibold uppercase mb-1">Catatan Tambahan</span>
-                        <p id="modalCatatan" class="text-slate-700 dark:text-slate-300 text-xs italic">Tiada catatan khas.</p>
+                        <button onclick="resetMapLocation()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-semibold text-xs inline-flex items-center gap-1 transition border border-slate-300 dark:border-slate-600">
+                            <i class="fa-solid fa-arrows-to-dot text-cyan-500"></i>
+                            <span>Origin</span>
+                        </button>
+                        <a href="https://maps.app.goo.gl/nhYpicns3pEpyv1H9" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-lg font-semibold text-xs inline-flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-diamond-turn-right"></i>
+                            <span>Navigasi GPS</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -591,7 +526,6 @@
                         <div id="sessionTempat" class="text-amber-600 dark:text-amber-400 font-bold text-sm">Bilik Lisan 1</div>
                     </div>
 
-                    <!-- SENARAI PELAJAR SPECIFIC TO THIS SESSION -->
                     <div class="sm:col-span-2 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-300 dark:border-cyan-500/40 p-4 rounded-xl shadow-inner">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-cyan-700 dark:text-cyan-400 text-xs font-bold uppercase flex items-center gap-1.5">
@@ -660,6 +594,7 @@
 
     <script>
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnQGkvEeyBKsnp4rJQSgck_hQL0aK8z6TKVn8bSSAa3Y9GoOq6cUX3TRWe7NCh5aRfsa8qEjxOEmjq/pub?output=csv";
+        const DEFAULT_MAPS_URL = "https://maps.app.goo.gl/nhYpicns3pEpyv1H9";
 
         let rawTimetableData = [];
         let filteredData = [];
@@ -1029,34 +964,6 @@
                 }
             };
 
-            destroyChart('dayChart');
-            const dayCounts = {};
-            filteredData.forEach(d => {
-                const day = d.HARI || 'Lain-lain';
-                dayCounts[day] = (dayCounts[day] || 0) + 1;
-            });
-
-            const dayCtx = document.getElementById('chartDayDistribution');
-            if (dayCtx) {
-                charts.dayChart = new Chart(dayCtx.getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(dayCounts),
-                        datasets: [{
-                            data: Object.values(dayCounts),
-                            backgroundColor: ['#00e5ff', '#f59e0b', '#8b5cf6', '#10b981', '#3b82f6', '#ec4899', '#6366f1'],
-                            borderWidth: 2,
-                            borderColor: isDark ? '#1e293b' : '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'right', labels: { color: textColor, font: { size: 11 } } } }
-                    }
-                });
-            }
-
             destroyChart('venueChart');
             const venueCounts = {};
             filteredData.forEach(d => {
@@ -1213,7 +1120,7 @@
                     PELAJAR: getItem('PELAJAR', 'NAMA_PELAJAR', 'SENARAI_PELAJAR') || '-',
                     BIL_HARI: getItem('BIL_HARI', 'BIL HARI', 'BIL') || `${idx + 1}`,
                     TEMPAT: getItem('TEMPAT', 'LOKASI') || 'Dewan Peperiksaan',
-                    GOOGLE_MAPS: getItem('GOOGLE_MAPS', 'GOOGLE MAPS', 'MAPS', 'LINK_MAPS', 'MAP_LINK', 'LOKASI_LINK') || '',
+                    GOOGLE_MAPS: getItem('GOOGLE_MAPS', 'GOOGLE MAPS', 'MAPS', 'LINK_MAPS', 'MAP_LINK', 'LOKASI_LINK') || DEFAULT_MAPS_URL,
                     CATATAN: getItem('CATATAN', 'NOTA') || 'Tiada catatan'
                 };
             });
@@ -1915,6 +1822,15 @@
             if (banner && bannerText) {
                 bannerText.textContent = msg;
                 banner.classList.remove('hidden');
+            }
+        }
+
+        function resetMapLocation() {
+            const mapIframe = document.getElementById('mapIframe');
+            if (mapIframe) {
+                const defaultSatelliteSrc = "https://maps.google.com/maps?q=MAAHAD+TAHFIZ+AT-TAYYIBAH+Kampung+Sungai+Buah+Dengkil&t=k&z=17&ie=UTF8&iwloc=&output=embed";
+                mapIframe.src = defaultSatelliteSrc;
+                showToast("Peta telah dijajarkan semula ke lokasi origin (Maahad Tahfiz At-Tayyibah)", "info");
             }
         }
     </script>
