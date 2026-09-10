@@ -322,8 +322,8 @@
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Status Sesi</label>
                     <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
-                        <option value="ALL">Semua Status</option>
-                        <option value="AKAN_DATANG" selected>Akan Datang</option>
+                        <option value="ALL" selected>Semua Status</option>
+                        <option value="AKAN_DATANG">Akan Datang</option>
                         <option value="HARI_INI">Hari Ini</option>
                         <option value="SELESAI">Selesai</option>
                     </select>
@@ -798,7 +798,22 @@
 
         function sortDataArray(arr, col, dir) {
             const mult = dir === 'asc' ? 1 : -1;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const selectedStatus = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'ALL';
+
             arr.sort((a, b) => {
+                // If "Semua Status" is selected in List mode, push completed sessions to the bottom
+                if (currentViewMode === 'list' && selectedStatus === 'ALL') {
+                    const statusA = getItemStatus(a.TARIKH, todayStr);
+                    const statusB = getItemStatus(b.TARIKH, todayStr);
+                    
+                    const isACompleted = statusA === 'SELESAI';
+                    const isBCompleted = statusB === 'SELESAI';
+                    
+                    if (isACompleted && !isBCompleted) return 1;  // A goes down
+                    if (!isACompleted && isBCompleted) return -1; // B goes down
+                }
+
                 let valA = a[col] !== undefined ? a[col] : '';
                 let valB = b[col] !== undefined ? b[col] : '';
 
@@ -842,7 +857,7 @@
             document.getElementById('filterEndDate').value = '';
             document.getElementById('filterSubject').value = 'ALL';
             if (document.getElementById('filterCategory')) document.getElementById('filterCategory').value = 'ALL';
-            document.getElementById('filterStatus').value = 'AKAN_DATANG';
+            document.getElementById('filterStatus').value = 'ALL';
             document.getElementById('filterVenue').value = 'ALL';
             applyFilters();
             showToast('Penapis telah ditetapkan semula', 'info');
@@ -1444,7 +1459,7 @@
             });
 
             if (recordCounter) {
-                recordCounter.textContent = `Menunjukkan semua sesi`;
+                recordCounter.textContent = `Menunjukkan ${calendarItems.length} sesi pada bulan ini`;
             }
 
             const dateMap = new Map();
@@ -1519,7 +1534,6 @@
 
                     let isTodayCell = false;
                     if (calendarCurrentYear === realTodayY && calendarCurrentMonth === realTodayM && displayNum === realTodayD) {
-                        // Check if it's the current month cell matching today
                         if (isCurrentMonth) isTodayCell = true;
                     }
 
@@ -1763,7 +1777,7 @@
 
         function backToMainModalView() {
             document.getElementById('modalMainView').classList.remove('hidden');
-            document.getElementById('modalSessionDetailView').classList.add('hidden');
+            document.getElementById('sessionDetailView').classList.add('hidden');
         }
 
         function openSessionDetail(sIdx) {
