@@ -802,7 +802,6 @@
             const selectedStatus = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'ALL';
 
             arr.sort((a, b) => {
-                // If "Semua Status" is selected in List mode, push completed sessions to the bottom
                 if (currentViewMode === 'list' && selectedStatus === 'ALL') {
                     const statusA = getItemStatus(a.TARIKH, todayStr);
                     const statusB = getItemStatus(b.TARIKH, todayStr);
@@ -810,8 +809,8 @@
                     const isACompleted = statusA === 'SELESAI';
                     const isBCompleted = statusB === 'SELESAI';
                     
-                    if (isACompleted && !isBCompleted) return 1;  // A goes down
-                    if (!isACompleted && isBCompleted) return -1; // B goes down
+                    if (isACompleted && !isBCompleted) return 1;  
+                    if (!isACompleted && isBCompleted) return -1; 
                 }
 
                 let valA = a[col] !== undefined ? a[col] : '';
@@ -1335,6 +1334,16 @@
 
         function switchViewMode(mode) {
             currentViewMode = mode;
+            
+            // Auto reset filters when switching modes
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            document.getElementById('filterSubject').value = 'ALL';
+            if (document.getElementById('filterCategory')) document.getElementById('filterCategory').value = 'ALL';
+            document.getElementById('filterStatus').value = 'ALL';
+            document.getElementById('filterVenue').value = 'ALL';
+
             const btnCalendar = document.getElementById('viewBtnCalendar');
             const btnList = document.getElementById('viewBtnList');
             const calendarContainer = document.getElementById('calendarViewContainer');
@@ -1363,7 +1372,7 @@
                 titleElem.textContent = "Matriks Jadual Peperiksaan Terperinci";
                 subtitleElem.textContent = "Klik mana-mana baris untuk butiran terperinci & senarai pelajar / sidang";
             }
-            renderActiveView();
+            applyFilters();
         }
 
         function renderActiveView() {
@@ -1409,57 +1418,10 @@
 
             if (!container) return;
 
-            const selectedSubject = document.getElementById('filterSubject').value;
-            const startDateVal = document.getElementById('filterStartDate').value;
-            const endDateVal = document.getElementById('filterEndDate').value;
-            const selectedVenue = document.getElementById('filterVenue').value;
-            const selectedCategory = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : 'ALL';
-            const searchText = document.getElementById('filterSearch').value.toLowerCase();
-
-            const calendarItems = rawTimetableData.filter(item => {
-                const matchesSearch = !searchText || 
-                    item.SUBJEK.toLowerCase().includes(searchText) ||
-                    item.PERKARA.toLowerCase().includes(searchText) ||
-                    item.TEMPAT.toLowerCase().includes(searchText) ||
-                    item.CATATAN.toLowerCase().includes(searchText) ||
-                    item.SIDANG.toLowerCase().includes(searchText) ||
-                    item.PELAJAR.toLowerCase().includes(searchText);
-
-                const matchesSubject = selectedSubject === 'ALL' || item.SUBJEK === selectedSubject;
-                const matchesVenue = selectedVenue === 'ALL' || item.TEMPAT === selectedVenue;
-
-                let matchesDateRange = true;
-                const itemDateObj = parseDateTime(item.TARIKH, '00:00');
-                const itemTime = !isNaN(itemDateObj.getTime()) ? new Date(itemDateObj.getFullYear(), itemDateObj.getMonth(), itemDateObj.getDate()).getTime() : null;
-
-                if (startDateVal) {
-                    const startDateObj = new Date(startDateVal);
-                    const startTime = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate()).getTime();
-                    if (itemTime !== null && itemTime < startTime) matchesDateRange = false;
-                }
-                if (endDateVal) {
-                    const endDateObj = new Date(endDateVal);
-                    const endTime = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate()).getTime();
-                    if (itemTime !== null && itemTime > endTime) matchesDateRange = false;
-                }
-
-                let matchesCategory = true;
-                if (selectedCategory !== 'ALL') {
-                    const itemPerkaraUpper = (item.PERKARA || '').toUpperCase();
-                    if (selectedCategory === 'SPM') {
-                        matchesCategory = itemPerkaraUpper.includes('SPM') && !itemPerkaraUpper.includes('TRIAL') && !itemPerkaraUpper.includes('PERCUBAAN');
-                    } else if (selectedCategory === 'TRIAL') {
-                        matchesCategory = itemPerkaraUpper.includes('TRIAL') || itemPerkaraUpper.includes('PERCUBAAN');
-                    } else if (selectedCategory === 'SEMINAR') {
-                        matchesCategory = itemPerkaraUpper.includes('SEMINAR') || itemPerkaraUpper.includes('BENGKEL');
-                    }
-                }
-
-                return matchesSearch && matchesSubject && matchesDateRange && matchesVenue && matchesCategory;
-            });
+            const calendarItems = rawTimetableData;
 
             if (recordCounter) {
-                recordCounter.textContent = `Menunjukkan ${calendarItems.length} sesi pada bulan ini`;
+                recordCounter.textContent = `Menunjukkan ${calendarItems.length} sesi`;
             }
 
             const dateMap = new Map();
@@ -1473,6 +1435,42 @@
                     if (!dateMap.has(key)) dateMap.set(key, []);
                     dateMap.get(key).push(item);
                 }
+            });
+
+            // Group calendar items by Date and Subject/Category so multi-session same exam (e.g. Morning & Afternoon sidang) merge into 1 card
+            const mergedDateMap = new Map();
+            dateMap.forEach((items, dateKey) => {
+                const subGroups = new Map();
+                items.forEach(item => {
+                    const pUpper = (item.PERKARA || '').toUpperCase();
+                    const subj = (item.SUBJEK || '').trim().toUpperCase();
+                    let catKey = 'SPM';
+                    if (pUpper.includes('SEMINAR') || pUpper.includes('BENGKEL')) catKey = 'SEMINAR';
+                    else if (pUpper.includes('TRIAL') || pUpper.includes('PERCUBAAN')) catKey = 'TRIAL';
+
+                    const groupKey = `${catKey}|||${subj}|||${item.KERTAS || '-'}`;
+                    if (!subGroups.has(groupKey)) subGroups.set(groupKey, []);
+                    subGroups.get(groupKey).push(item);
+                });
+
+                const mergedList = [];
+                subGroups.forEach(subItems => {
+                    if (subItems.length === 1) {
+                        mergedList.push({
+                            ...subItems[0],
+                            isGrouped: false,
+                            groupItems: subItems
+                        });
+                    } else {
+                        mergedList.push({
+                            ...subItems[0],
+                            SIDANG: `${subItems.length} Sesi`,
+                            isGrouped: true,
+                            groupItems: subItems
+                        });
+                    }
+                });
+                mergedDateMap.set(dateKey, mergedList);
             });
 
             const firstDayIndex = new Date(calendarCurrentYear, calendarCurrentMonth, 1).getDay(); 
@@ -1530,7 +1528,7 @@
                         nextMonthDayCounter++;
                     }
 
-                    const dayItems = dateMap.get(cellDateKey) || [];
+                    const dayItems = mergedDateMap.get(cellDateKey) || [];
 
                     let isTodayCell = false;
                     if (calendarCurrentYear === realTodayY && calendarCurrentMonth === realTodayM && displayNum === realTodayD) {
@@ -1539,20 +1537,25 @@
 
                     let cellBgClass = isCurrentMonth ? 'bg-slate-900/30 dark:bg-slate-900/30 light:bg-white' : 'bg-slate-950/40 dark:bg-slate-950/40 light:bg-slate-100 opacity-75';
                     if (isTodayCell) {
-                        cellBgClass += ' today-highlight-cell bg-amber-500/15 dark:bg-amber-500/15 light:bg-amber-100/60 border border-amber-500/40';
+                        cellBgClass += ' today-highlight-cell bg-amber-500/20 dark:bg-amber-500/20 light:bg-amber-100 border-2 border-amber-500/60';
                     }
 
                     html += `
                         <td class="align-top p-2 md:p-2.5 border-r border-slate-700/50 light:border-slate-300 last:border-r-0 ${cellBgClass} min-h-[140px] md:min-h-[160px]">
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="font-mono font-bold text-xs ${isTodayCell ? 'text-amber-400 dark:text-amber-400 light:text-amber-700 font-black' : (isCurrentMonth ? 'text-slate-200 dark:text-slate-200 light:text-slate-800' : 'text-slate-400 light:text-slate-500')}">${String(displayNum).padStart(2, '0')}</span>
-                                ${dayItems.length > 0 ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">${dayItems.length} sesi</span>` : ''}
+                                ${dayItems.length > 0 ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">${dayItems.reduce((acc, curr) => acc + (curr.groupItems ? curr.groupItems.length : 1), 0)} sesi</span>` : ''}
                             </div>
                             <div class="space-y-1.5 pb-1">
                                 ${dayItems.map(item => {
                                     const pUpper = (item.PERKARA || '').toUpperCase();
                                     const subj = item.SUBJEK || '';
-                                    const kertasNum = formatKertasText(item.KERTAS, '', item.PERKARA);
+                                    let kertasNum = formatKertasText(item.KERTAS, '', item.PERKARA);
+
+                                    // Remove 'K' for oral/listening/UTQH
+                                    if (kertasNum && (kertasNum.toUpperCase().includes('BERTUTUR') || kertasNum.toUpperCase().includes('MENDENGAR') || kertasNum.toUpperCase().includes('UTQH'))) {
+                                        kertasNum = kertasNum.replace(/^K\s*/i, '');
+                                    }
 
                                     let titleText = '';
                                     let badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
@@ -1561,11 +1564,11 @@
                                         titleText = `SEMINAR ${subj}`.trim();
                                         badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/40';
                                     } else if (pUpper.includes('TRIAL') || pUpper.includes('PERCUBAAN')) {
-                                        let kText = (kertasNum && kertasNum !== '-') ? ` K${kertasNum}` : '';
+                                        let kText = (kertasNum && kertasNum !== '-') ? ` ${kertasNum}` : '';
                                         titleText = `TRIAL ${subj}${kText}`.trim();
                                         badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/40';
                                     } else if (pUpper.includes('SPM')) {
-                                        let kText = (kertasNum && kertasNum !== '-') ? ` K${kertasNum}` : '';
+                                        let kText = (kertasNum && kertasNum !== '-') ? ` ${kertasNum}` : '';
                                         titleText = `SPM ${subj}${kText}`.trim();
                                         badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
                                     } else {
@@ -1612,7 +1615,7 @@
                         className: cell.className,
                         bg: cell.style.background
                     });
-                    cell.classList.remove('today-highlight-cell', 'bg-amber-500/15', 'dark:bg-amber-500/15', 'light:bg-amber-100/60', 'border-amber-500/40');
+                    cell.classList.remove('today-highlight-cell', 'bg-amber-500/20', 'dark:bg-amber-500/20', 'light:bg-amber-100', 'border-2', 'border-amber-500/60');
                 });
 
                 const originalWidth = calendarArea.style.width;
@@ -1712,8 +1715,10 @@
 
             currentActiveModalItem = item;
 
-            document.getElementById('modalMainView').classList.remove('hidden');
-            document.getElementById('modalSessionDetailView').classList.add('hidden');
+            const mainView = document.getElementById('modalMainView');
+            const sessionView = document.getElementById('modalSessionDetailView');
+            if (mainView) mainView.classList.remove('hidden');
+            if (sessionView) sessionView.classList.add('hidden');
 
             document.getElementById('modalSubjekBadge').textContent = item.SUBJEK;
             document.getElementById('modalPerkara').textContent = item.PERKARA;
@@ -1776,8 +1781,10 @@
         }
 
         function backToMainModalView() {
-            document.getElementById('modalMainView').classList.remove('hidden');
-            document.getElementById('sessionDetailView').classList.add('hidden');
+            const mainView = document.getElementById('modalMainView');
+            const sessionView = document.getElementById('modalSessionDetailView');
+            if (mainView) mainView.classList.remove('hidden');
+            if (sessionView) sessionView.classList.add('hidden');
         }
 
         function openSessionDetail(sIdx) {
@@ -1818,8 +1825,10 @@
             }
             document.getElementById('sessionStudentCountBadge').textContent = `${count} Pelajar`;
 
-            document.getElementById('modalMainView').classList.add('hidden');
-            document.getElementById('sessionDetailView').classList.remove('hidden');
+            const mainView = document.getElementById('modalMainView');
+            const sessionView = document.getElementById('modalSessionDetailView');
+            if (mainView) mainView.classList.add('hidden');
+            if (sessionView) sessionView.classList.remove('hidden');
         }
 
         function toggleTheme() {
