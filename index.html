@@ -49,7 +49,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Dark / Light dynamic variables */
+        /* Dark / Light dynamic styling */
         html.dark body { background-color: #0f172a; color: #f1f5f9; }
         html.light body { background-color: #f1f5f9; color: #0f172a; }
 
@@ -103,7 +103,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black bg-slate-900 text-slate-100 dark:bg-slate-900 dark:text-slate-100 light:bg-slate-100 light:text-slate-900">
 
     <header class="bg-slate-900/90 dark:bg-slate-900/90 light:bg-white border-b border-slate-800 dark:border-slate-800 light:border-slate-200 sticky top-0 z-50 backdrop-blur-md px-4 py-3">
         <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
@@ -133,7 +133,7 @@
                     <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span id="syncStatusText" class="font-medium text-slate-200 light:text-slate-800">Tersambung ke Google Sheet</span>
                 </div>
-                <span class="text-slate-600">|</span>
+                <span class="text-slate-600 light:text-slate-400">|</span>
                 <span class="text-slate-400 light:text-slate-600" id="lastUpdatedTime">Kemaskini Terkini: Tepat Sekarang</span>
             </div>
 
@@ -483,28 +483,28 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh</span>
                         <span id="modalHariTarikh" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">ISNIN, 12 JAN</span>
                     </div>
 
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan</span>
                         <span id="modalMasa" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">08:00 AM - 10:00 AM</span>
                     </div>
 
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
                         <span id="modalKertas" class="text-cyan-400 font-mono font-bold text-sm">KERTAS 1</span>
                     </div>
 
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang Kumpulan</span>
                         <div id="modalSidangContainer" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">
                         </div>
                     </div>
 
-                    <div class="sm:col-span-2 bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="sm:col-span-2 bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi</span>
                         <div id="modalTempat" class="text-amber-400 font-bold text-sm">Dewan Peperiksaan</div>
                     </div>
@@ -518,7 +518,7 @@
                         </div>
                     </div>
 
-                    <div class="sm:col-span-2 bg-slate-800/40 dark:bg-slate-800/40 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="sm:col-span-2 bg-slate-800/40 dark:bg-slate-800/40 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block text-xs font-semibold uppercase mb-1">Catatan Tambahan</span>
                         <p id="modalCatatan" class="text-slate-300 light:text-slate-700 text-xs italic">Tiada catatan khas.</p>
                     </div>
@@ -551,27 +551,27 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh Sesi</span>
                         <span id="sessionHariTarikh" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">ISNIN, 26/10/26</span>
                     </div>
 
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan Sesi</span>
                         <span id="sessionMasa" class="text-amber-400 font-mono font-bold text-sm">10:45 AM - 12:45 PM</span>
                     </div>
 
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
                         <span id="sessionKertas" class="text-cyan-400 font-mono font-bold text-sm">KERTAS 3</span>
                     </div>
 
-                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang</span>
                         <span id="sessionSidangLabel" class="text-purple-400 font-mono font-bold text-sm">SIDANG 1</span>
                     </div>
 
-                    <div class="sm:col-span-2 bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                    <div class="sm:col-span-2 bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-300">
                         <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi Sesi</span>
                         <div id="sessionTempat" class="text-amber-400 font-bold text-sm">Bilik Lisan 1</div>
                     </div>
@@ -1441,13 +1441,10 @@
                 }
 
                 return matchesSearch && matchesSubject && matchesDateRange && matchesVenue && matchesCategory;
-            }).filter(item => {
-                const dt = parseDateTime(item.TARIKH, item.MASA_MULA);
-                return !isNaN(dt.getTime()) && dt.getFullYear() === calendarCurrentYear && dt.getMonth() === calendarCurrentMonth;
             });
 
             if (recordCounter) {
-                recordCounter.textContent = `Menunjukkan ${calendarItems.length} sesi pada bulan ini`;
+                recordCounter.textContent = `Menunjukkan semua sesi`;
             }
 
             const dateMap = new Map();
@@ -1491,7 +1488,7 @@
             for (let i = 0; i < 6; i++) { 
                 if (dayCounter > totalDaysInMonth && i > 3) break; 
 
-                html += `<tr class="h-28 md:h-32">`;
+                html += `<tr class="">`;
 
                 for (let j = 0; j < 7; j++) {
                     let cellDateKey = '';
@@ -1521,22 +1518,23 @@
                     const dayItems = dateMap.get(cellDateKey) || [];
 
                     let isTodayCell = false;
-                    if (isCurrentMonth && calendarCurrentYear === realTodayY && calendarCurrentMonth === realTodayM && displayNum === realTodayD) {
-                        isTodayCell = true;
+                    if (calendarCurrentYear === realTodayY && calendarCurrentMonth === realTodayM && displayNum === realTodayD) {
+                        // Check if it's the current month cell matching today
+                        if (isCurrentMonth) isTodayCell = true;
                     }
 
-                    let cellBgClass = isCurrentMonth ? 'bg-slate-900/30 dark:bg-slate-900/30 light:bg-white' : 'bg-slate-950/60 dark:bg-slate-950/60 light:bg-slate-100 opacity-40';
+                    let cellBgClass = isCurrentMonth ? 'bg-slate-900/30 dark:bg-slate-900/30 light:bg-white' : 'bg-slate-950/40 dark:bg-slate-950/40 light:bg-slate-100 opacity-75';
                     if (isTodayCell) {
-                        cellBgClass = 'bg-amber-500/10 dark:bg-amber-500/10 light:bg-amber-50 border-amber-500/40';
+                        cellBgClass += ' today-highlight-cell bg-amber-500/15 dark:bg-amber-500/15 light:bg-amber-100/60 border border-amber-500/40';
                     }
 
                     html += `
-                        <td class="align-top p-1.5 md:p-2 border-r border-slate-700/50 light:border-slate-300 last:border-r-0 ${cellBgClass}" ${isTodayCell ? 'data-today-cell="true"' : ''}>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="font-mono font-bold text-xs ${isTodayCell ? 'text-amber-500 dark:text-amber-400 light:text-amber-700 font-black' : (isCurrentMonth ? 'text-slate-200 dark:text-slate-200 light:text-slate-800' : 'text-slate-500')}">${String(displayNum).padStart(2, '0')}</span>
+                        <td class="align-top p-2 md:p-2.5 border-r border-slate-700/50 light:border-slate-300 last:border-r-0 ${cellBgClass} min-h-[140px] md:min-h-[160px]">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="font-mono font-bold text-xs ${isTodayCell ? 'text-amber-400 dark:text-amber-400 light:text-amber-700 font-black' : (isCurrentMonth ? 'text-slate-200 dark:text-slate-200 light:text-slate-800' : 'text-slate-400 light:text-slate-500')}">${String(displayNum).padStart(2, '0')}</span>
                                 ${dayItems.length > 0 ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">${dayItems.length} sesi</span>` : ''}
                             </div>
-                            <div class="space-y-1 overflow-y-auto max-h-20 md:max-h-24 pr-0.5">
+                            <div class="space-y-1.5 pb-1">
                                 ${dayItems.map(item => {
                                     const pUpper = (item.PERKARA || '').toUpperCase();
                                     const subj = item.SUBJEK || '';
@@ -1546,26 +1544,26 @@
                                     let badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
 
                                     if (pUpper.includes('SEMINAR') || pUpper.includes('BENGKEL')) {
-                                        titleText = `SEMINAR ${subj}`;
+                                        titleText = `SEMINAR ${subj}`.trim();
                                         badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/40';
                                     } else if (pUpper.includes('TRIAL') || pUpper.includes('PERCUBAAN')) {
                                         let kText = (kertasNum && kertasNum !== '-') ? ` K${kertasNum}` : '';
-                                        titleText = `TRIAL ${subj}${kText}`;
+                                        titleText = `TRIAL ${subj}${kText}`.trim();
                                         badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/40';
                                     } else if (pUpper.includes('SPM')) {
                                         let kText = (kertasNum && kertasNum !== '-') ? ` K${kertasNum}` : '';
-                                        titleText = `SPM ${subj}${kText}`;
-                                        badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
+                                        titleText = `SPM ${subj}${kText}`.trim();
+                                        badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
                                     } else {
-                                        titleText = `${item.PERKARA}`;
+                                        titleText = `${item.PERKARA}`.trim();
                                     }
 
                                     const originalIdx = displayData.findIndex(d => d.id === item.id || (d.groupItems && d.groupItems.some(gi => gi.id === item.id)));
 
                                     return `
-                                        <div onclick="openModal(${originalIdx >= 0 ? originalIdx : 0})" class="p-1 rounded border text-[10px] font-medium leading-tight cursor-pointer transition shadow-sm truncate ${badgeColor}" title="${titleText} @ ${item.TEMPAT}">
-                                            <div class="font-bold truncate">${titleText}</div>
-                                            <div class="text-[9px] opacity-80 truncate">${item.MASA_MULA}</div>
+                                        <div onclick="openModal(${originalIdx >= 0 ? originalIdx : 0})" class="p-1.5 rounded border text-[10px] font-medium leading-normal cursor-pointer transition shadow-sm ${badgeColor}" title="${titleText} @ ${item.TEMPAT}">
+                                            <div class="font-bold tracking-tight">${titleText}</div>
+                                            <div class="text-[9px] opacity-85 font-mono mt-0.5">${item.MASA_MULA}</div>
                                         </div>
                                     `;
                                 }).join('')}
@@ -1593,20 +1591,32 @@
 
                 showToast("Sedang menjana imej kalendar bersih...", "info");
 
-                const todayCells = calendarArea.querySelectorAll('[data-today-cell="true"]');
-                const originalClasses = [];
+                const todayCells = calendarArea.querySelectorAll('.today-highlight-cell');
+                const originalStyles = [];
                 todayCells.forEach(cell => {
-                    originalClasses.push(cell.className);
-                    cell.className = cell.className.replace(/bg-amber-500\/10|dark:bg-amber-500\/10|light:bg-amber-50|border-amber-500\/40/g, currentTheme === 'dark' ? 'bg-slate-900/30' : 'bg-white');
+                    originalStyles.push({
+                        className: cell.className,
+                        bg: cell.style.background
+                    });
+                    cell.classList.remove('today-highlight-cell', 'bg-amber-500/15', 'dark:bg-amber-500/15', 'light:bg-amber-100/60', 'border-amber-500/40');
                 });
+
+                const originalWidth = calendarArea.style.width;
+                const originalMaxWidth = calendarArea.style.maxWidth;
+                calendarArea.style.width = '1200px';
+                calendarArea.style.maxWidth = 'none';
 
                 html2canvas(calendarArea, {
                     scale: 2,
                     backgroundColor: currentTheme === 'dark' ? '#0f172a' : '#ffffff',
-                    logging: false
+                    logging: false,
+                    windowWidth: 1400
                 }).then(canvas => {
+                    calendarArea.style.width = originalWidth;
+                    calendarArea.style.maxWidth = originalMaxWidth;
+
                     todayCells.forEach((cell, idx) => {
-                        cell.className = originalClasses[idx];
+                        cell.className = originalStyles[idx].className;
                     });
 
                     const link = document.createElement('a');
@@ -1615,8 +1625,10 @@
                     link.click();
                     showToast("Gambar kalendar berjaya dimuat turun!", "success");
                 }).catch(err => {
+                    calendarArea.style.width = originalWidth;
+                    calendarArea.style.maxWidth = originalMaxWidth;
                     todayCells.forEach((cell, idx) => {
-                        cell.className = originalClasses[idx];
+                        cell.className = originalStyles[idx].className;
                     });
                     console.error("Gagal menjana imej:", err);
                     showToast("Gagal menjana gambar kalendar", "warning");
