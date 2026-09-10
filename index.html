@@ -40,7 +40,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -48,6 +48,10 @@
             font-family: 'Inter', sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+
+        /* Dark / Light dynamic variables */
+        html.dark body { background-color: #0f172a; color: #f1f5f9; }
+        html.light body { background-color: #f1f5f9; color: #0f172a; }
 
         ::-webkit-scrollbar {
             width: 6px;
@@ -99,7 +103,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
 
     <header class="bg-slate-900/90 dark:bg-slate-900/90 light:bg-white border-b border-slate-800 dark:border-slate-800 light:border-slate-200 sticky top-0 z-50 backdrop-blur-md px-4 py-3">
         <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
@@ -110,41 +114,41 @@
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="font-bold text-lg md:text-xl tracking-tight text-white light:text-slate-900">
+                        <h1 class="font-bold text-lg md:text-xl tracking-tight text-slate-100 dark:text-slate-100 light:text-slate-900">
                             Road To Success
                         </h1>
                         <span class="text-xs bg-cyan-500/20 text-cyan-400 font-mono px-2 py-0.5 rounded border border-cyan-500/30 font-semibold">
                             PRO DASHBOARD
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400 light:text-slate-500 flex items-center gap-1.5">
+                    <p class="text-xs text-slate-400 light:text-slate-600 flex items-center gap-1.5">
                         <i class="fa-solid fa-calendar-days text-cyan-400"></i>
                         <span>Jadual Peperiksaan & Pengurusan Masa</span>
                     </p>
                 </div>
             </div>
 
-            <div class="hidden lg:flex items-center gap-3 bg-slate-800/80 light:bg-slate-100 px-3.5 py-1.5 rounded-lg border border-slate-700/60 light:border-slate-300 text-xs">
+            <div class="hidden lg:flex items-center gap-3 bg-slate-800/80 dark:bg-slate-800/80 light:bg-slate-200 px-3.5 py-1.5 rounded-lg border border-slate-700/60 dark:border-slate-700/60 light:border-slate-300 text-xs">
                 <div class="flex items-center gap-2">
                     <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span id="syncStatusText" class="font-medium text-slate-200 light:text-slate-700">Tersambung ke Google Sheet</span>
+                    <span id="syncStatusText" class="font-medium text-slate-200 light:text-slate-800">Tersambung ke Google Sheet</span>
                 </div>
                 <span class="text-slate-600">|</span>
-                <span class="text-slate-400 light:text-slate-500" id="lastUpdatedTime">Kemaskini Terkini: Tepat Sekarang</span>
+                <span class="text-slate-400 light:text-slate-600" id="lastUpdatedTime">Kemaskini Terkini: Tepat Sekarang</span>
             </div>
 
             <div class="flex items-center gap-2">
-                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-lg bg-slate-800 light:bg-slate-100 text-slate-300 light:text-slate-700 hover:bg-slate-700 light:hover:bg-slate-200 transition border border-slate-700 light:border-slate-300 flex items-center gap-2 text-xs font-semibold" title="Tukar Tema (Light/Dark)">
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-lg bg-slate-800 dark:bg-slate-800 light:bg-slate-200 text-slate-300 light:text-slate-800 hover:bg-slate-700 light:hover:bg-slate-300 transition border border-slate-700 dark:border-slate-700 light:border-slate-300 flex items-center gap-2 text-xs font-semibold" title="Tukar Tema (Light/Dark)">
                     <i class="fa-solid fa-moon text-amber-400" id="themeIcon"></i>
                     <span id="themeLabel" class="hidden sm:inline">Dark Theme</span>
                 </button>
 
-                <button onclick="fetchSheetData()" class="p-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold transition flex items-center gap-2 text-xs shadow-md shadow-cyan-900/30" title="Muat Semula Data dari Google Sheet">
+                <button onclick="fetchSheetData()" class="p-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition flex items-center gap-2 text-xs shadow-md shadow-cyan-900/30" title="Muat Semula Data dari Google Sheet">
                     <i class="fa-solid fa-rotate text-sm" id="refreshIcon"></i>
                     <span class="hidden sm:inline">Refresh</span>
                 </button>
 
-                <button onclick="toggleFullscreen()" class="p-2.5 rounded-lg bg-slate-800 light:bg-slate-100 text-slate-300 light:text-slate-700 hover:bg-slate-700 light:hover:bg-slate-200 transition border border-slate-700 light:border-slate-300" title="Skrin Penuh">
+                <button onclick="toggleFullscreen()" class="p-2.5 rounded-lg bg-slate-800 dark:bg-slate-800 light:bg-slate-200 text-slate-300 light:text-slate-800 hover:bg-slate-700 light:hover:bg-slate-300 transition border border-slate-700 dark:border-slate-700 light:border-slate-300" title="Skrin Penuh">
                     <i class="fa-solid fa-expand"></i>
                 </button>
             </div>
@@ -169,7 +173,7 @@
                     <i class="fa-solid fa-chart-pie text-cyan-400"></i>
                     <span class="text-xs font-bold text-slate-300 light:text-slate-700 uppercase tracking-wider">Ringkasan Utama Peperiksaan</span>
                 </div>
-                <button onclick="toggleAllKpis()" id="toggleKpiBtn" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 light:bg-cyan-50 border border-cyan-500/40">
+                <button onclick="toggleAllKpis()" id="toggleKpiBtn" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 light:bg-cyan-100 border border-cyan-500/40">
                     <i id="toggleKpiIcon" class="fa-solid fa-chevron-down text-xs"></i>
                     <span id="toggleKpiText">Papar Semua Kad</span>
                 </button>
@@ -177,49 +181,46 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 
-                <!-- Metric 1: SESI NEXT COUNTDOWN -->
-                <div class="pbi-tile tile-blue bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md glow-active">
+                <div class="pbi-tile tile-blue bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-md glow-active">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">SESI NEXT COUNTDOWN</span>
+                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-600">SESI NEXT COUNTDOWN</span>
                         <i class="fa-solid fa-hourglass-half text-blue-400 text-lg animate-spin" style="animation-duration: 8s;"></i>
                     </div>
                     <div class="mt-1">
                         <div class="text-sm font-bold text-blue-400 truncate" id="kpiNextSubject">Sesi Seterusnya</div>
-                        <div class="text-2xl font-black font-mono text-white light:text-slate-900 mt-0.5" id="kpiCountdownTimer">00d 00h 00m</div>
+                        <div class="text-2xl font-black font-mono text-slate-100 dark:text-slate-100 light:text-slate-900 mt-0.5" id="kpiCountdownTimer">00d 00h 00m</div>
                     </div>
-                    <p class="text-[11px] text-slate-400 light:text-slate-500 mt-1 truncate" id="kpiNextDetails">
+                    <p class="text-[11px] text-slate-400 light:text-slate-600 mt-1 truncate" id="kpiNextDetails">
                         Masa & Tempat
                     </p>
                 </div>
 
-                <!-- Metric 2: COUNTDOWN SPM BERTULIS -->
-                <div class="pbi-tile tile-yellow bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md">
+                <div class="pbi-tile tile-yellow bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-md">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">COUNTDOWN SPM BERTULIS</span>
+                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-600">COUNTDOWN SPM BERTULIS</span>
                         <i class="fa-solid fa-calendar-check text-amber-400 text-lg"></i>
                     </div>
                     <div class="mt-2 flex items-baseline justify-between">
-                        <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiTotalDays">0</span>
+                        <span class="text-3xl font-extrabold text-slate-100 dark:text-slate-100 light:text-slate-900 font-mono" id="kpiTotalDays">0</span>
                         <span class="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Baki Hari</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 light:text-slate-500 mt-2 flex items-center gap-1">
+                    <p class="text-[11px] text-slate-400 light:text-slate-600 mt-2 flex items-center gap-1">
                         <i class="fa-solid fa-clock text-amber-400"></i> Tarikh BM: 23/11/2026
                     </p>
                 </div>
 
-                <!-- Metric 3: PEPERIKSAAN SPM (Collapsible Default Hidden) -->
-                <div id="kpiCardSpm" class="pbi-tile tile-teal bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md flex flex-col justify-between hidden">
+                <div id="kpiCardSpm" class="pbi-tile tile-teal bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-md flex flex-col justify-between hidden">
                     <div>
                         <div class="flex items-center justify-between">
-                            <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">PEPERIKSAAN SPM</span>
+                            <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-600">PEPERIKSAAN SPM</span>
                             <i class="fa-solid fa-file-signature text-cyan-400 text-lg"></i>
                         </div>
                         <div class="mt-2 flex items-baseline justify-between">
-                            <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiTotalPapers">0</span>
+                            <span class="text-3xl font-extrabold text-slate-100 dark:text-slate-100 light:text-slate-900 font-mono" id="kpiTotalPapers">0</span>
                             <span class="text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Jumlah SPM</span>
                         </div>
                     </div>
-                    <div class="mt-3 pt-2 border-t border-slate-700/60 light:border-slate-200 flex items-center justify-between text-[11px]">
+                    <div class="mt-3 pt-2 border-t border-slate-700/60 dark:border-slate-700/60 light:border-slate-300 flex items-center justify-between text-[11px]">
                         <span class="text-emerald-400 font-semibold flex items-center gap-1" title="Kertas SPM yang telah selesai">
                             <i class="fa-solid fa-circle-check"></i> Selesai: <strong id="kpiSpmCompleted" class="font-mono text-xs">0</strong>
                         </span>
@@ -229,35 +230,33 @@
                     </div>
                 </div>
 
-                <!-- Metric 4: Subjek Berdaftar (Collapsible Default Hidden) -->
-                <div id="kpiCardSubjects" class="pbi-tile tile-purple bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md hidden">
+                <div id="kpiCardSubjects" class="pbi-tile tile-purple bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-md hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">SUBJEK BERDAFTAR</span>
+                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-600">SUBJEK BERDAFTAR</span>
                         <i class="fa-solid fa-book-open-reader text-purple-400 text-lg"></i>
                     </div>
                     <div class="mt-2 flex items-baseline justify-between">
-                        <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiTotalSubjects">0</span>
+                        <span class="text-3xl font-extrabold text-slate-100 dark:text-slate-100 light:text-slate-900 font-mono" id="kpiTotalSubjects">0</span>
                         <span class="text-xs font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Subjek Utama</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 light:text-slate-500 mt-2 flex items-center gap-1">
+                    <p class="text-[11px] text-slate-400 light:text-slate-600 mt-2 flex items-center gap-1">
                         <i class="fa-solid fa-layer-group text-purple-400"></i> Agihan merentasi jadual
                     </p>
                 </div>
 
-                <!-- Metric 5: STATUS SESI (Collapsible Default Hidden) -->
-                <div id="kpiCardStatus" class="pbi-tile tile-green bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 light:border-slate-200 shadow-md hidden">
+                <div id="kpiCardStatus" class="pbi-tile tile-green bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-4 rounded-xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-md hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-500">STATUS SESI</span>
+                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400 light:text-slate-600">STATUS SESI</span>
                         <i class="fa-solid fa-list-check text-emerald-400 text-lg"></i>
                     </div>
                     <div class="mt-2 flex items-baseline justify-between">
                         <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-extrabold text-white light:text-slate-900 font-mono" id="kpiUpcomingCount">0</span>
-                            <span class="text-xs text-slate-400">/ <span id="kpiCompletedCount">0</span> Selesai</span>
+                            <span class="text-3xl font-extrabold text-slate-100 dark:text-slate-100 light:text-slate-900 font-mono" id="kpiUpcomingCount">0</span>
+                            <span class="text-xs text-slate-400 light:text-slate-600">/ <span id="kpiCompletedCount">0</span> Selesai</span>
                         </div>
                         <span class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Akan Datang</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 light:text-slate-500 mt-2 flex items-center gap-1">
+                    <p class="text-[11px] text-slate-400 light:text-slate-600 mt-2 flex items-center gap-1">
                         <i class="fa-solid fa-circle-check text-emerald-400"></i> Berdasarkan tarikh semasa
                     </p>
                 </div>
@@ -265,19 +264,19 @@
             </div>
         </section>
 
-        <section class="bg-slate-800/90 light:bg-white p-4 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 light:border-slate-200 pb-3">
+        <section class="bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-4 rounded-2xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-lg space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 light:border-slate-300 pb-3">
                 <div class="flex items-center gap-2 cursor-pointer select-none" onclick="toggleFilterPanel()">
                     <i class="fa-solid fa-filter text-cyan-400"></i>
-                    <h2 class="font-bold text-sm tracking-wide text-white light:text-slate-900 uppercase">Power BI Slicers & Filters</h2>
-                    <span class="text-xs bg-slate-700 light:bg-slate-200 text-slate-300 light:text-slate-700 px-2 py-0.5 rounded-full" id="filterCountBadge">0 Ditapis</span>
+                    <h2 class="font-bold text-sm tracking-wide text-slate-100 dark:text-slate-100 light:text-slate-900 uppercase">Power BI Slicers & Filters</h2>
+                    <span class="text-xs bg-slate-700 light:bg-slate-200 text-slate-300 light:text-slate-800 px-2 py-0.5 rounded-full" id="filterCountBadge">0 Ditapis</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-400 light:text-slate-600 hover:text-cyan-400 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/50 light:bg-slate-100 hover:bg-slate-700 border border-slate-600/50 light:border-slate-300">
+                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-400 light:text-slate-600 hover:text-cyan-400 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/50 light:bg-slate-200 hover:bg-slate-700 border border-slate-600/50 light:border-slate-300">
                         <i class="fa-solid fa-arrows-rotate text-xs"></i>
                         <span>Reset Penapis</span>
                     </button>
-                    <button id="toggleFilterBtn" onclick="toggleFilterPanel()" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 light:bg-cyan-50 border border-cyan-500/40">
+                    <button id="toggleFilterBtn" onclick="toggleFilterPanel()" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/60 light:bg-cyan-100 border border-cyan-500/40">
                         <i id="toggleFilterIcon" class="fa-solid fa-chevron-down text-xs"></i>
                         <span id="toggleFilterText">Buka Penapis</span>
                     </button>
@@ -286,33 +285,33 @@
 
             <div id="filterGridContainer" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Carian Teks / Pelajar / Sidang</label>
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Carian Teks / Pelajar</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Cari nama, subjek, sidang..." class="w-full pl-8 pr-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                        <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Cari nama, subjek..." class="w-full pl-8 pr-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Tarikh Mula (Dari)</label>
-                    <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Tarikh Mula</label>
+                    <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Tarikh Akhir (Hingga)</label>
-                    <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Tarikh Akhir</label>
+                    <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Subjek</label>
-                    <select id="filterSubject" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    <select id="filterSubject" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                         <option value="ALL">Semua Subjek</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Jenis / Perkara</label>
-                    <select id="filterCategory" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    <select id="filterCategory" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                         <option value="ALL">Semua Jenis</option>
                         <option value="SPM">SPM</option>
                         <option value="TRIAL">TRIAL / Percubaan</option>
@@ -322,7 +321,7 @@
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Status Sesi</label>
-                    <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                         <option value="ALL">Semua Status</option>
                         <option value="AKAN_DATANG" selected>Akan Datang</option>
                         <option value="HARI_INI">Hari Ini</option>
@@ -332,7 +331,7 @@
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 light:text-slate-600 uppercase mb-1">Pilih Tempat</label>
-                    <select id="filterVenue" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 light:bg-slate-50 border border-slate-700 light:border-slate-300 rounded-lg text-xs text-white light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
+                    <select id="filterVenue" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 border border-slate-700 dark:border-slate-700 light:border-slate-300 rounded-lg text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 focus:outline-none focus:border-cyan-500 transition">
                         <option value="ALL">Semua Tempat</option>
                     </select>
                 </div>
@@ -340,30 +339,64 @@
             </div>
         </section>
 
-        <section class="bg-slate-800/90 light:bg-white rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-xl overflow-hidden">
+        <section id="timetableSectionWrapper" class="bg-slate-800/90 dark:bg-slate-800/90 light:bg-white rounded-2xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-xl overflow-hidden">
             
-            <div class="p-4 border-b border-slate-700 light:border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-800 light:bg-slate-50">
+            <div class="p-4 border-b border-slate-700 light:border-slate-300 flex flex-wrap items-center justify-between gap-4 bg-slate-800 dark:bg-slate-800 light:bg-slate-50">
                 <div class="flex items-center gap-2.5">
                     <i class="fa-solid fa-table text-cyan-400 text-lg"></i>
                     <div>
-                        <h3 class="font-bold text-base text-white light:text-slate-900">Matriks Jadual Peperiksaan Terperinci</h3>
-                        <p class="text-xs text-slate-400 light:text-slate-500">Klik mana-mana baris untuk butiran terperinci & senarai pelajar / sidang</p>
+                        <h3 class="font-bold text-base text-slate-100 dark:text-slate-100 light:text-slate-900" id="mainSectionTitle">Kalendar Bulanan Peperiksaan</h3>
+                        <p class="text-xs text-slate-400 light:text-slate-600" id="mainSectionSubtitle">Paparan jadual bulanan interaktif. Klik mana-mana ujian untuk butiran lanjut.</p>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs text-slate-400 mr-1" id="tableRecordCounter">Menunjukkan 0 rekod</span>
+                    <span class="text-xs text-slate-400 light:text-slate-600 mr-1" id="tableRecordCounter">Menunjukkan 0 rekod</span>
+                    
+                    <div class="flex bg-slate-900 dark:bg-slate-900 light:bg-slate-200 p-1 rounded-lg border border-slate-700 light:border-slate-300">
+                        <button id="viewBtnCalendar" onclick="switchViewMode('calendar')" class="px-3 py-1.5 rounded-md text-xs font-bold transition bg-cyan-600 text-white shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <span>Kalendar</span>
+                        </button>
+                        <button id="viewBtnList" onclick="switchViewMode('list')" class="px-3 py-1.5 rounded-md text-xs font-bold transition text-slate-300 light:text-slate-800 hover:text-white flex items-center gap-1.5">
+                            <i class="fa-solid fa-list"></i>
+                            <span>Mod List (Jadual)</span>
+                        </button>
+                    </div>
 
-                    <button onclick="exportFilteredDataCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Eksport CSV</span>
+                    <button id="exportActionButton" onclick="handleExportAction()" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <i id="exportActionIcon" class="fa-solid fa-image"></i>
+                        <span id="exportActionLabel">Muat Turun Gambar</span>
                     </button>
                 </div>
             </div>
 
-            <div class="max-h-[420px] overflow-y-auto overflow-x-auto">
+            <div id="calendarViewContainer" class="p-4 space-y-4">
+                
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 dark:bg-slate-900/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/60 light:border-slate-300">
+                    <div class="flex items-center gap-3">
+                        <button onclick="changeCalendarMonth(-1)" class="p-2 rounded-lg bg-slate-800 dark:bg-slate-800 light:bg-white hover:bg-slate-700 text-cyan-400 border border-slate-700 light:border-slate-300 transition text-xs font-bold">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Bulan Sebelum
+                        </button>
+                        <h2 id="calendarMonthTitle" class="text-base md:text-lg font-black text-slate-100 dark:text-slate-100 light:text-slate-900 font-mono">
+                            September 2026
+                        </h2>
+                        <button onclick="changeCalendarMonth(1)" class="p-2 rounded-lg bg-slate-800 dark:bg-slate-800 light:bg-white hover:bg-slate-700 text-cyan-400 border border-slate-700 light:border-slate-300 transition text-xs font-bold">
+                            Bulan Seterusnya <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                    <button onclick="jumpToCurrentMonth()" class="px-3 py-1.5 rounded-lg bg-slate-800 dark:bg-slate-800 light:bg-white text-slate-300 light:text-slate-800 hover:text-cyan-400 border border-slate-700 light:border-slate-300 text-xs font-semibold transition">
+                        <i class="fa-solid fa-calendar-day mr-1"></i> Bulan Semasa
+                    </button>
+                </div>
+
+                <div id="printableCalendarArea" class="bg-slate-900/40 dark:bg-slate-900/40 light:bg-white rounded-xl overflow-hidden border border-slate-700/80 light:border-slate-300 shadow-lg">
+                </div>
+            </div>
+
+            <div id="listViewContainer" class="hidden max-h-[460px] overflow-y-auto overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-900/90 light:bg-slate-100 text-slate-300 light:text-slate-700 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-200 sticky top-0 z-10 backdrop-blur-sm">
+                    <thead class="bg-slate-900/90 dark:bg-slate-900/90 light:bg-slate-100 text-slate-300 light:text-slate-800 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-300 sticky top-0 z-10 backdrop-blur-sm">
                         <tr>
                             <th onclick="sortTable('BIL_HARI')" class="p-3.5 cursor-pointer hover:text-cyan-400 transition select-none">
                                 Bil Hari <i class="fa-solid fa-sort text-[10px] ml-1 opacity-50"></i>
@@ -392,13 +425,12 @@
                             <th class="p-3.5">Catatan</th>
                         </tr>
                     </thead>
-                    <tbody id="timetableBody" class="divide-y divide-slate-700/50 light:divide-slate-200">
-                        <!-- Rows rendered dynamically via JS -->
+                    <tbody id="timetableBody" class="divide-y divide-slate-700/50 light:divide-slate-300">
                     </tbody>
                 </table>
             </div>
 
-            <div id="tableEmptyState" class="hidden p-12 text-center text-slate-400 light:text-slate-500">
+            <div id="tableEmptyState" class="hidden p-12 text-center text-slate-400 light:text-slate-600">
                 <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-40"></i>
                 <p class="font-semibold text-sm">Tiada rekod ditemui berdasarkan penapis anda.</p>
                 <p class="text-xs mt-1">Cuba tetapkan semula penapis atau kata kunci carian anda.</p>
@@ -407,13 +439,13 @@
         </section>
 
         <section class="max-w-2xl mx-auto">
-            <div class="bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 light:border-slate-200 shadow-lg flex flex-col justify-between">
-                <div class="flex flex-wrap items-center justify-between border-b border-slate-700 light:border-slate-200 pb-3 mb-3 gap-2">
+            <div class="bg-slate-800/90 dark:bg-slate-800/90 light:bg-white p-5 rounded-2xl border border-slate-700/80 dark:border-slate-700/80 light:border-slate-300 shadow-lg flex flex-col justify-between">
+                <div class="flex flex-wrap items-center justify-between border-b border-slate-700 light:border-slate-300 pb-3 mb-3 gap-2">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-user-graduate text-cyan-400 text-base"></i>
                         <div>
-                            <h3 class="font-bold text-sm tracking-wide text-white light:text-slate-900">Senarai Pelajar SPM & Semakan Sidang</h3>
-                            <p class="text-[11px] text-slate-400 light:text-slate-500">Klik nama untuk paparkan semua sidang Bertutur & UTQH (SPM & TRIAL)</p>
+                            <h3 class="font-bold text-sm tracking-wide text-slate-100 dark:text-slate-100 light:text-slate-900">Senarai Pelajar SPM & Semakan Sidang</h3>
+                            <p class="text-[11px] text-slate-400 light:text-slate-600">Klik nama untuk paparkan semua sidang Bertutur & UTQH (SPM & TRIAL)</p>
                         </div>
                     </div>
                     <span class="text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-0.5 rounded font-mono font-semibold" id="studentListCountBadge">0 Pelajar</span>
@@ -421,7 +453,6 @@
 
                 <div class="relative min-h-[240px] max-h-[300px] overflow-y-auto pr-1">
                     <div id="studentDirectoryGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <!-- Student directory buttons populated dynamically -->
                     </div>
                 </div>
             </div>
@@ -429,15 +460,13 @@
 
     </main>
 
-    <!-- FLOATING WINDOW / MODAL VIEW -->
     <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 light:bg-white border border-slate-700/80 light:border-slate-300 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-slate-900 dark:bg-slate-900 light:bg-white border border-slate-700/80 light:border-slate-300 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] flex flex-col overflow-hidden">
             
-            <button onclick="handleModalCloseButton()" class="absolute top-4 right-4 text-slate-400 hover:text-white light:hover:text-black text-lg p-1.5 rounded-lg bg-slate-800/50 light:bg-slate-100 z-20 transition" title="Tutup">
+            <button onclick="handleModalCloseButton()" class="absolute top-4 right-4 text-slate-400 hover:text-white light:hover:text-black text-lg p-1.5 rounded-lg bg-slate-800/50 light:bg-slate-200 z-20 transition" title="Tutup">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <!-- VIEW 1: OVERALL EXAM SUMMARY VIEW -->
             <div id="modalMainView" class="space-y-4 overflow-y-auto pr-1 flex-1">
                 <div class="flex items-center gap-3 shrink-0">
                     <div class="bg-cyan-500/20 text-cyan-400 p-3 rounded-xl border border-cyan-500/30">
@@ -447,62 +476,58 @@
                         <span id="modalSubjekBadge" class="text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded font-semibold uppercase">
                             SUBJEK
                         </span>
-                        <h3 id="modalPerkara" class="text-xl font-bold text-white light:text-slate-900 mt-1">
+                        <h3 id="modalPerkara" class="text-xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900 mt-1">
                             Nama Perkara / Tajuk
                         </h3>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh</span>
-                        <span id="modalHariTarikh" class="text-slate-100 light:text-slate-800 font-bold text-sm">ISNIN, 12 JAN</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh</span>
+                        <span id="modalHariTarikh" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">ISNIN, 12 JAN</span>
                     </div>
 
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan</span>
-                        <span id="modalMasa" class="text-slate-100 light:text-slate-800 font-bold text-sm">08:00 AM - 10:00 AM</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan</span>
+                        <span id="modalMasa" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">08:00 AM - 10:00 AM</span>
                     </div>
 
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
                         <span id="modalKertas" class="text-cyan-400 font-mono font-bold text-sm">KERTAS 1</span>
                     </div>
 
-                    <!-- SIDANG KUMPULAN CARD -->
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang Kumpulan</span>
-                        <div id="modalSidangContainer" class="text-slate-100 light:text-slate-800 font-bold text-sm">
-                            <!-- Rendered dynamically -->
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang Kumpulan</span>
+                        <div id="modalSidangContainer" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">
                         </div>
                     </div>
 
-                    <div class="sm:col-span-2 bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi</span>
+                    <div class="sm:col-span-2 bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi</span>
                         <div id="modalTempat" class="text-amber-400 font-bold text-sm">Dewan Peperiksaan</div>
                     </div>
 
-                    <!-- SENARAI PELAJAR TERLIBAT SECTION -->
-                    <div class="sm:col-span-2 bg-slate-800/40 light:bg-cyan-50/50 border border-cyan-500/30 light:border-cyan-200 p-3.5 rounded-xl">
+                    <div class="sm:col-span-2 bg-slate-800/40 dark:bg-slate-800/40 light:bg-cyan-50 border border-cyan-500/30 light:border-cyan-200 p-3.5 rounded-xl">
                         <span class="text-cyan-400 light:text-cyan-700 block text-xs font-bold uppercase mb-1.5 flex items-center gap-1.5">
                             <i class="fa-solid fa-users text-cyan-400"></i> Senarai Pelajar Terlibat
                         </span>
-                        <div id="modalPelajar" class="text-slate-200 light:text-slate-800 font-medium text-xs leading-relaxed max-h-44 overflow-y-auto pr-1">
+                        <div id="modalPelajar" class="text-slate-200 dark:text-slate-200 light:text-slate-800 font-medium text-xs leading-relaxed max-h-44 overflow-y-auto pr-1">
                             -
                         </div>
                     </div>
 
-                    <div class="sm:col-span-2 bg-slate-800/40 light:bg-slate-50 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block text-xs font-semibold uppercase mb-1">Catatan Tambahan</span>
+                    <div class="sm:col-span-2 bg-slate-800/40 dark:bg-slate-800/40 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block text-xs font-semibold uppercase mb-1">Catatan Tambahan</span>
                         <p id="modalCatatan" class="text-slate-300 light:text-slate-700 text-xs italic">Tiada catatan khas.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW 2: DRILLDOWN STUDENT LIST PAGE FOR A SPECIFIC SELECTED SESSION -->
             <div id="modalSessionDetailView" class="hidden space-y-4 overflow-y-auto pr-1 flex-1">
-                <div class="flex items-center justify-between border-b border-slate-800 light:border-slate-200 pb-3">
-                    <button onclick="backToMainModalView()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-cyan-400 light:text-cyan-700 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                <div class="flex items-center justify-between border-b border-slate-800 light:border-slate-300 pb-3">
+                    <button onclick="backToMainModalView()" class="px-3.5 py-1.5 bg-slate-800 dark:bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-cyan-400 light:text-cyan-700 rounded-lg text-xs font-bold transition flex items-center gap-2">
                         <i class="fa-solid fa-arrow-left"></i>
                         <span>Kembali ke Ringkasan Ujian</span>
                     </button>
@@ -519,40 +544,39 @@
                         <span id="sessionSubjekBadge" class="text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded font-semibold uppercase">
                             SUBJEK
                         </span>
-                        <h3 id="sessionPerkaraTitle" class="text-lg font-bold text-white light:text-slate-900 mt-0.5">
+                        <h3 id="sessionPerkaraTitle" class="text-lg font-bold text-slate-100 dark:text-slate-100 light:text-slate-900 mt-0.5">
                             Nama Ujian
                         </h3>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh Sesi</span>
-                        <span id="sessionHariTarikh" class="text-slate-100 light:text-slate-800 font-bold text-sm">ISNIN, 26/10/26</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Hari & Tarikh Sesi</span>
+                        <span id="sessionHariTarikh" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-bold text-sm">ISNIN, 26/10/26</span>
                     </div>
 
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan Sesi</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Masa Peperiksaan Sesi</span>
                         <span id="sessionMasa" class="text-amber-400 font-mono font-bold text-sm">10:45 AM - 12:45 PM</span>
                     </div>
 
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Ujian / Kertas</span>
                         <span id="sessionKertas" class="text-cyan-400 font-mono font-bold text-sm">KERTAS 3</span>
                     </div>
 
-                    <div class="bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang</span>
+                    <div class="bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Sidang</span>
                         <span id="sessionSidangLabel" class="text-purple-400 font-mono font-bold text-sm">SIDANG 1</span>
                     </div>
 
-                    <div class="sm:col-span-2 bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-200">
-                        <span class="text-slate-400 light:text-slate-500 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi Sesi</span>
+                    <div class="sm:col-span-2 bg-slate-800/60 dark:bg-slate-800/60 light:bg-slate-100 p-3 rounded-xl border border-slate-700/50 light:border-slate-700/50 light:border-slate-300">
+                        <span class="text-slate-400 light:text-slate-600 block font-semibold uppercase text-[10px] tracking-wider mb-1">Tempat / Lokasi Sesi</span>
                         <div id="sessionTempat" class="text-amber-400 font-bold text-sm">Bilik Lisan 1</div>
                     </div>
 
-                    <!-- SENARAI PELAJAR SPECIFIC TO THIS SESSION -->
-                    <div class="sm:col-span-2 bg-cyan-950/40 light:bg-cyan-50 border border-cyan-500/40 light:border-cyan-300 p-4 rounded-xl shadow-inner">
+                    <div class="sm:col-span-2 bg-cyan-950/40 dark:bg-cyan-950/40 light:bg-cyan-50 border border-cyan-500/40 light:border-cyan-300 p-4 rounded-xl shadow-inner">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-cyan-400 light:text-cyan-700 text-xs font-bold uppercase flex items-center gap-1.5">
                                 <i class="fa-solid fa-users-viewfinder text-cyan-400"></i> Senarai Nama Pelajar Terlibat
@@ -561,16 +585,16 @@
                                 0 Pelajar
                             </span>
                         </div>
-                        <div id="sessionStudentList" class="text-slate-100 light:text-slate-800 font-medium text-xs leading-relaxed max-h-56 overflow-y-auto pr-1">
+                        <div id="sessionStudentList" class="text-slate-100 dark:text-slate-100 light:text-slate-800 font-medium text-xs leading-relaxed max-h-56 overflow-y-auto pr-1">
                             -
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center pt-2 shrink-0 border-t border-slate-800 light:border-slate-200">
+            <div class="flex justify-between items-center pt-2 shrink-0 border-t border-slate-800 light:border-slate-300">
                 <span class="text-[11px] text-slate-500 italic">Road To Success SPM Dashboard</span>
-                <button onclick="closeModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-slate-200 light:text-slate-800 rounded-lg text-xs font-bold transition">
+                <button onclick="closeModal()" class="px-5 py-2 bg-slate-800 dark:bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-slate-200 light:text-slate-800 rounded-lg text-xs font-bold transition">
                     Tutup
                 </button>
             </div>
@@ -578,15 +602,14 @@
         </div>
     </div>
 
-    <!-- STUDENT SIDANG MODAL -->
     <div id="studentSidangModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 light:bg-white border border-slate-700/80 light:border-slate-300 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-slate-900 dark:bg-slate-900 light:bg-white border border-slate-700/80 light:border-slate-300 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] flex flex-col overflow-hidden">
             
-            <button onclick="closeStudentSidangModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white light:hover:text-black text-lg p-1.5 rounded-lg bg-slate-800/50 light:bg-slate-100 z-20 transition" title="Tutup">
+            <button onclick="closeStudentSidangModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white light:hover:text-black text-lg p-1.5 rounded-lg bg-slate-800/50 light:bg-slate-200 z-20 transition" title="Tutup">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <div class="flex items-center gap-3 shrink-0 border-b border-slate-800 light:border-slate-200 pb-3">
+            <div class="flex items-center gap-3 shrink-0 border-b border-slate-800 light:border-slate-300 pb-3">
                 <div class="bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 p-3 rounded-xl shadow-md">
                     <i class="fa-solid fa-id-card-clip text-2xl"></i>
                 </div>
@@ -594,27 +617,25 @@
                     <span class="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                         JADUAL SIDANG PELAJAR INDIVIDU
                     </span>
-                    <h3 id="studentModalName" class="text-lg md:text-xl font-bold text-white light:text-slate-900 mt-0.5">
+                    <h3 id="studentModalName" class="text-lg md:text-xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900 mt-0.5">
                         Nama Pelajar
                     </h3>
                 </div>
             </div>
 
-            <!-- List of Sidang Sessions for this student -->
             <div id="studentSidangListContainer" class="space-y-3 overflow-y-auto pr-1 flex-1">
-                <!-- Rendered dynamically -->
             </div>
 
-            <div class="flex justify-between items-center pt-2 shrink-0 border-t border-slate-800 light:border-slate-200">
+            <div class="flex justify-between items-center pt-2 shrink-0 border-t border-slate-800 light:border-slate-300">
                 <span class="text-[11px] text-slate-500 italic" id="studentSidangTotalBadge">0 Sidang Ditemui</span>
-                <button onclick="closeStudentSidangModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-slate-200 light:text-slate-800 rounded-lg text-xs font-bold transition">
+                <button onclick="closeStudentSidangModal()" class="px-5 py-2 bg-slate-800 dark:bg-slate-800 hover:bg-slate-700 light:bg-slate-200 light:hover:bg-slate-300 text-slate-200 light:text-slate-800 rounded-lg text-xs font-bold transition">
                     Tutup
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 light:bg-slate-900 text-white border border-slate-700 shadow-2xl rounded-xl p-4 flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 dark:bg-slate-800 light:bg-slate-900 text-white border border-slate-700 shadow-2xl rounded-xl p-4 flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-300 z-50">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toastMessage" class="text-xs font-medium">Message text</span>
     </div>
@@ -626,12 +647,15 @@
         let rawTimetableData = [];
         let filteredData = [];
         let displayData = []; 
-        let isGroupedMode = true; 
         let currentSort = { column: 'BIL_HARI', direction: 'asc' };
         let currentTheme = 'dark';
         let countdownInterval = null;
         let currentActiveModalItem = null;
         let areAllKpisVisible = false;
+
+        let currentViewMode = 'calendar';
+        let calendarCurrentYear = 2026;
+        let calendarCurrentMonth = 8; // September (0-indexed: 8 = Sep)
 
         function toggleAllKpis() {
             areAllKpisVisible = !areAllKpisVisible;
@@ -964,8 +988,8 @@
         }
 
         const fallbackSampleData = [
-            { HARI: "ISNIN", TARIKH: "2026-09-07", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Bahasa Melayu Kertas 1", SUBJEK: "Bahasa Melayu", "UJIAN / KERTAS": "1", SIDANG: "-", PELAJAR: "Semua Pelajar", BIL_HARI: "1", TEMPAT: "Dewan Utama", GOOGLE_MAPS: "", CATATAN: "Pensel 2B & Kad Pengenalan" },
-            { HARI: "SELASA", TARIKH: "2026-09-08", MASA_MULA: "08:00", MASA_TAMAT: "12:00", PERKARA: "SPM BM Bertutur", SUBJEK: "Bahasa Melayu", "UJIAN / KERTAS": "3", SIDANG: "Sidang 1", PELAJAR: "Ahmad, Ali, Sarah, Siti", BIL_HARI: "2", TEMPAT: "Bilik Lisan", GOOGLE_MAPS: "", CATATAN: "Tiba 15 minit awal" }
+            { HARI: "ISNIN", TARIKH: "2026-09-07", MASA_MULA: "08:00", MASA_TAMAT: "10:30", PERKARA: "SPM Bahasa Melayu Kertas 1", SUBJEK: "Bahasa Melayu", "UJIAN / KERTAS": "1", SIDANG: "-", PELAJAR: "Semua Pelajar", BIL_HARI: "1", TEMPAT: "Dewan Utama", GOOGLE_MAPS: DEFAULT_MAP_URL, CATATAN: "Pensel 2B & Kad Pengenalan" },
+            { HARI: "SELASA", TARIKH: "2026-09-08", MASA_MULA: "08:00", MASA_TAMAT: "12:00", PERKARA: "SPM BM Bertutur", SUBJEK: "Bahasa Melayu", "UJIAN / KERTAS": "3", SIDANG: "Sidang 1", PELAJAR: "Ahmad, Ali, Sarah, Siti", BIL_HARI: "2", TEMPAT: "Bilik Lisan", GOOGLE_MAPS: DEFAULT_MAP_URL, CATATAN: "Tiba 15 minit awal" }
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -1082,7 +1106,7 @@
 
         function formatStudentListHTML(pelString) {
             if (!pelString || pelString === '-' || pelString.toUpperCase() === 'N/A') {
-                return '<span class="text-slate-400 light:text-slate-500 italic">Semua Pelajar / Tiada senarai khas</span>';
+                return '<span class="text-slate-400 light:text-slate-600 italic">Semua Pelajar / Tiada senarai khas</span>';
             }
 
             let items = [];
@@ -1101,7 +1125,7 @@
                 .filter(name => name.length > 0);
 
             if (cleanedNames.length === 0) {
-                return '<span class="text-slate-400 light:text-slate-500 italic">Semua Pelajar / Tiada senarai khas</span>';
+                return '<span class="text-slate-400 light:text-slate-600 italic">Semua Pelajar / Tiada senarai khas</span>';
             }
 
             return cleanedNames.map((name, idx) => `
@@ -1217,7 +1241,7 @@
             sortDataArray(displayData, currentSort.column, currentSort.direction);
 
             updateKPIs();
-            renderTable();
+            renderActiveView();
             renderStudentListCard();
         }
 
@@ -1294,6 +1318,314 @@
             return result;
         }
 
+        function switchViewMode(mode) {
+            currentViewMode = mode;
+            const btnCalendar = document.getElementById('viewBtnCalendar');
+            const btnList = document.getElementById('viewBtnList');
+            const calendarContainer = document.getElementById('calendarViewContainer');
+            const listContainer = document.getElementById('listViewContainer');
+            const exportLabel = document.getElementById('exportActionLabel');
+            const exportIcon = document.getElementById('exportActionIcon');
+            const titleElem = document.getElementById('mainSectionTitle');
+            const subtitleElem = document.getElementById('mainSectionSubtitle');
+
+            if (mode === 'calendar') {
+                btnCalendar.className = "px-3 py-1.5 rounded-md text-xs font-bold transition bg-cyan-600 text-white shadow-sm flex items-center gap-1.5";
+                btnList.className = "px-3 py-1.5 rounded-md text-xs font-bold transition text-slate-300 light:text-slate-800 hover:text-white flex items-center gap-1.5";
+                calendarContainer.classList.remove('hidden');
+                listContainer.classList.add('hidden');
+                exportLabel.textContent = "Muat Turun Gambar";
+                exportIcon.className = "fa-solid fa-image";
+                titleElem.textContent = "Kalendar Bulanan Peperiksaan";
+                subtitleElem.textContent = "Paparan jadual bulanan interaktif. Klik mana-mana ujian untuk butiran lanjut.";
+            } else {
+                btnList.className = "px-3 py-1.5 rounded-md text-xs font-bold transition bg-cyan-600 text-white shadow-sm flex items-center gap-1.5";
+                btnCalendar.className = "px-3 py-1.5 rounded-md text-xs font-bold transition text-slate-300 light:text-slate-800 hover:text-white flex items-center gap-1.5";
+                listContainer.classList.remove('hidden');
+                calendarContainer.classList.add('hidden');
+                exportLabel.textContent = "Eksport CSV";
+                exportIcon.className = "fa-solid fa-file-excel";
+                titleElem.textContent = "Matriks Jadual Peperiksaan Terperinci";
+                subtitleElem.textContent = "Klik mana-mana baris untuk butiran terperinci & senarai pelajar / sidang";
+            }
+            renderActiveView();
+        }
+
+        function renderActiveView() {
+            if (currentViewMode === 'calendar') {
+                renderMonthlyCalendar();
+            } else {
+                renderTable();
+            }
+        }
+
+        const monthNamesMalay = [
+            "Januari", "Februari", "Mac", "April", "Mei", "Jun", 
+            "Julai", "Ogos", "September", "Oktober", "November", "Disember"
+        ];
+
+        function changeCalendarMonth(direction) {
+            calendarCurrentMonth += direction;
+            if (calendarCurrentMonth > 11) {
+                calendarCurrentMonth = 0;
+                calendarCurrentYear++;
+            } else if (calendarCurrentMonth < 0) {
+                calendarCurrentMonth = 11;
+                calendarCurrentYear--;
+            }
+            renderMonthlyCalendar();
+        }
+
+        function jumpToCurrentMonth() {
+            const now = new Date();
+            calendarCurrentYear = now.getFullYear();
+            calendarCurrentMonth = now.getMonth();
+            renderMonthlyCalendar();
+        }
+
+        function renderMonthlyCalendar() {
+            const titleElem = document.getElementById('calendarMonthTitle');
+            const container = document.getElementById('printableCalendarArea');
+            const recordCounter = document.getElementById('tableRecordCounter');
+
+            if (titleElem) {
+                titleElem.textContent = `${monthNamesMalay[calendarCurrentMonth]} ${calendarCurrentYear}`;
+            }
+
+            if (!container) return;
+
+            const selectedSubject = document.getElementById('filterSubject').value;
+            const startDateVal = document.getElementById('filterStartDate').value;
+            const endDateVal = document.getElementById('filterEndDate').value;
+            const selectedVenue = document.getElementById('filterVenue').value;
+            const selectedCategory = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : 'ALL';
+            const searchText = document.getElementById('filterSearch').value.toLowerCase();
+
+            const calendarItems = rawTimetableData.filter(item => {
+                const matchesSearch = !searchText || 
+                    item.SUBJEK.toLowerCase().includes(searchText) ||
+                    item.PERKARA.toLowerCase().includes(searchText) ||
+                    item.TEMPAT.toLowerCase().includes(searchText) ||
+                    item.CATATAN.toLowerCase().includes(searchText) ||
+                    item.SIDANG.toLowerCase().includes(searchText) ||
+                    item.PELAJAR.toLowerCase().includes(searchText);
+
+                const matchesSubject = selectedSubject === 'ALL' || item.SUBJEK === selectedSubject;
+                const matchesVenue = selectedVenue === 'ALL' || item.TEMPAT === selectedVenue;
+
+                let matchesDateRange = true;
+                const itemDateObj = parseDateTime(item.TARIKH, '00:00');
+                const itemTime = !isNaN(itemDateObj.getTime()) ? new Date(itemDateObj.getFullYear(), itemDateObj.getMonth(), itemDateObj.getDate()).getTime() : null;
+
+                if (startDateVal) {
+                    const startDateObj = new Date(startDateVal);
+                    const startTime = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate()).getTime();
+                    if (itemTime !== null && itemTime < startTime) matchesDateRange = false;
+                }
+                if (endDateVal) {
+                    const endDateObj = new Date(endDateVal);
+                    const endTime = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate()).getTime();
+                    if (itemTime !== null && itemTime > endTime) matchesDateRange = false;
+                }
+
+                let matchesCategory = true;
+                if (selectedCategory !== 'ALL') {
+                    const itemPerkaraUpper = (item.PERKARA || '').toUpperCase();
+                    if (selectedCategory === 'SPM') {
+                        matchesCategory = itemPerkaraUpper.includes('SPM') && !itemPerkaraUpper.includes('TRIAL') && !itemPerkaraUpper.includes('PERCUBAAN');
+                    } else if (selectedCategory === 'TRIAL') {
+                        matchesCategory = itemPerkaraUpper.includes('TRIAL') || itemPerkaraUpper.includes('PERCUBAAN');
+                    } else if (selectedCategory === 'SEMINAR') {
+                        matchesCategory = itemPerkaraUpper.includes('SEMINAR') || itemPerkaraUpper.includes('BENGKEL');
+                    }
+                }
+
+                return matchesSearch && matchesSubject && matchesDateRange && matchesVenue && matchesCategory;
+            }).filter(item => {
+                const dt = parseDateTime(item.TARIKH, item.MASA_MULA);
+                return !isNaN(dt.getTime()) && dt.getFullYear() === calendarCurrentYear && dt.getMonth() === calendarCurrentMonth;
+            });
+
+            if (recordCounter) {
+                recordCounter.textContent = `Menunjukkan ${calendarItems.length} sesi pada bulan ini`;
+            }
+
+            const dateMap = new Map();
+            calendarItems.forEach(item => {
+                const dt = parseDateTime(item.TARIKH, item.MASA_MULA);
+                if (!isNaN(dt.getTime())) {
+                    const y = dt.getFullYear();
+                    const m = String(dt.getMonth() + 1).padStart(2, '0');
+                    const d = String(dt.getDate()).padStart(2, '0');
+                    const key = `${y}-${m}-${d}`;
+                    if (!dateMap.has(key)) dateMap.set(key, []);
+                    dateMap.get(key).push(item);
+                }
+            });
+
+            const firstDayIndex = new Date(calendarCurrentYear, calendarCurrentMonth, 1).getDay(); 
+            const totalDaysInMonth = new Date(calendarCurrentYear, calendarCurrentMonth + 1, 0).getDate();
+            const prevMonthDays = new Date(calendarCurrentYear, calendarCurrentMonth, 0).getDate();
+
+            const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+            const nowReal = new Date();
+            const realTodayY = nowReal.getFullYear();
+            const realTodayM = nowReal.getMonth();
+            const realTodayD = nowReal.getDate();
+
+            let html = `
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-xs select-none">
+                        <thead>
+                            <tr class="bg-slate-900/90 dark:bg-slate-900/90 light:bg-slate-200 text-slate-300 dark:text-slate-300 light:text-slate-800 font-mono text-center border-b border-slate-700 light:border-slate-300">
+                                ${weekdays.map(w => `<th class="py-2.5 px-1 border-r border-slate-700/60 light:border-slate-300 last:border-r-0 font-bold uppercase tracking-wider">${w}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/50 light:divide-slate-300">
+            `;
+
+            let dayCounter = 1;
+            let nextMonthDayCounter = 1;
+
+            for (let i = 0; i < 6; i++) { 
+                if (dayCounter > totalDaysInMonth && i > 3) break; 
+
+                html += `<tr class="h-28 md:h-32">`;
+
+                for (let j = 0; j < 7; j++) {
+                    let cellDateKey = '';
+                    let isCurrentMonth = false;
+                    let displayNum = '';
+
+                    if (i === 0 && j < firstDayIndex) {
+                        const pDay = prevMonthDays - (firstDayIndex - j - 1);
+                        displayNum = pDay;
+                        const pm = calendarCurrentMonth === 0 ? 12 : calendarCurrentMonth;
+                        const py = calendarCurrentMonth === 0 ? calendarCurrentYear - 1 : calendarCurrentYear;
+                        cellDateKey = `${py}-${String(pm).padStart(2, '0')}-${String(pDay).padStart(2, '0')}`;
+                    } else if (dayCounter <= totalDaysInMonth) {
+                        isCurrentMonth = true;
+                        displayNum = dayCounter;
+                        const cm = calendarCurrentMonth + 1;
+                        cellDateKey = `${calendarCurrentYear}-${String(cm).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`;
+                        dayCounter++;
+                    } else {
+                        displayNum = nextMonthDayCounter;
+                        const nm = calendarCurrentMonth === 11 ? 1 : calendarCurrentMonth + 2;
+                        const ny = calendarCurrentMonth === 11 ? calendarCurrentYear + 1 : calendarCurrentYear;
+                        cellDateKey = `${ny}-${String(nm).padStart(2, '0')}-${String(nextMonthDayCounter).padStart(2, '0')}`;
+                        nextMonthDayCounter++;
+                    }
+
+                    const dayItems = dateMap.get(cellDateKey) || [];
+
+                    let isTodayCell = false;
+                    if (isCurrentMonth && calendarCurrentYear === realTodayY && calendarCurrentMonth === realTodayM && displayNum === realTodayD) {
+                        isTodayCell = true;
+                    }
+
+                    let cellBgClass = isCurrentMonth ? 'bg-slate-900/30 dark:bg-slate-900/30 light:bg-white' : 'bg-slate-950/60 dark:bg-slate-950/60 light:bg-slate-100 opacity-40';
+                    if (isTodayCell) {
+                        cellBgClass = 'bg-amber-500/10 dark:bg-amber-500/10 light:bg-amber-50 border-amber-500/40';
+                    }
+
+                    html += `
+                        <td class="align-top p-1.5 md:p-2 border-r border-slate-700/50 light:border-slate-300 last:border-r-0 ${cellBgClass}" ${isTodayCell ? 'data-today-cell="true"' : ''}>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-mono font-bold text-xs ${isTodayCell ? 'text-amber-500 dark:text-amber-400 light:text-amber-700 font-black' : (isCurrentMonth ? 'text-slate-200 dark:text-slate-200 light:text-slate-800' : 'text-slate-500')}">${String(displayNum).padStart(2, '0')}</span>
+                                ${dayItems.length > 0 ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">${dayItems.length} sesi</span>` : ''}
+                            </div>
+                            <div class="space-y-1 overflow-y-auto max-h-20 md:max-h-24 pr-0.5">
+                                ${dayItems.map(item => {
+                                    const pUpper = (item.PERKARA || '').toUpperCase();
+                                    const subj = item.SUBJEK || '';
+                                    const kertasNum = formatKertasText(item.KERTAS, '', item.PERKARA);
+
+                                    let titleText = '';
+                                    let badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
+
+                                    if (pUpper.includes('SEMINAR') || pUpper.includes('BENGKEL')) {
+                                        titleText = `SEMINAR ${subj}`;
+                                        badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/40';
+                                    } else if (pUpper.includes('TRIAL') || pUpper.includes('PERCUBAAN')) {
+                                        let kText = (kertasNum && kertasNum !== '-') ? ` K${kertasNum}` : '';
+                                        titleText = `TRIAL ${subj}${kText}`;
+                                        badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/40';
+                                    } else if (pUpper.includes('SPM')) {
+                                        let kText = (kertasNum && kertasNum !== '-') ? ` K${kertasNum}` : '';
+                                        titleText = `SPM ${subj}${kText}`;
+                                        badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-300 border-cyan-500/40 hover:bg-cyan-500/40';
+                                    } else {
+                                        titleText = `${item.PERKARA}`;
+                                    }
+
+                                    const originalIdx = displayData.findIndex(d => d.id === item.id || (d.groupItems && d.groupItems.some(gi => gi.id === item.id)));
+
+                                    return `
+                                        <div onclick="openModal(${originalIdx >= 0 ? originalIdx : 0})" class="p-1 rounded border text-[10px] font-medium leading-tight cursor-pointer transition shadow-sm truncate ${badgeColor}" title="${titleText} @ ${item.TEMPAT}">
+                                            <div class="font-bold truncate">${titleText}</div>
+                                            <div class="text-[9px] opacity-80 truncate">${item.MASA_MULA}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </td>
+                    `;
+                }
+
+                html += `</tr>`;
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function handleExportAction() {
+            if (currentViewMode === 'calendar') {
+                const calendarArea = document.getElementById('printableCalendarArea');
+                if (!calendarArea) return;
+
+                showToast("Sedang menjana imej kalendar bersih...", "info");
+
+                const todayCells = calendarArea.querySelectorAll('[data-today-cell="true"]');
+                const originalClasses = [];
+                todayCells.forEach(cell => {
+                    originalClasses.push(cell.className);
+                    cell.className = cell.className.replace(/bg-amber-500\/10|dark:bg-amber-500\/10|light:bg-amber-50|border-amber-500\/40/g, currentTheme === 'dark' ? 'bg-slate-900/30' : 'bg-white');
+                });
+
+                html2canvas(calendarArea, {
+                    scale: 2,
+                    backgroundColor: currentTheme === 'dark' ? '#0f172a' : '#ffffff',
+                    logging: false
+                }).then(canvas => {
+                    todayCells.forEach((cell, idx) => {
+                        cell.className = originalClasses[idx];
+                    });
+
+                    const link = document.createElement('a');
+                    link.download = `Kalendar_Peperiksaan_${monthNamesMalay[calendarCurrentMonth]}_${calendarCurrentYear}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    showToast("Gambar kalendar berjaya dimuat turun!", "success");
+                }).catch(err => {
+                    todayCells.forEach((cell, idx) => {
+                        cell.className = originalClasses[idx];
+                    });
+                    console.error("Gagal menjana imej:", err);
+                    showToast("Gagal menjana gambar kalendar", "warning");
+                });
+            } else {
+                exportFilteredDataCSV();
+            }
+        }
+
         function renderTable() {
             const tbody = document.getElementById('timetableBody');
             const emptyState = document.getElementById('tableEmptyState');
@@ -1317,30 +1649,32 @@
                 const masaDisplay = `${item.MASA_MULA} - ${item.MASA_TAMAT}`;
                 const kertasFormatted = formatKertasText(item.KERTAS, 'Kertas ', item.PERKARA);
 
-                const mapLink = (item.GOOGLE_MAPS && item.GOOGLE_MAPS.trim() !== '') ? item.GOOGLE_MAPS : DEFAULT_MAP_URL;
-                const tempatDisplay = `
-                    <div class="flex items-center gap-2">
-                        <span class="text-slate-300 light:text-slate-700 font-medium">${item.TEMPAT}</span>
-                        <a href="${mapLink}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2 py-0.5 bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 rounded font-semibold text-[10px] inline-flex items-center gap-1 transition shrink-0" title="Buka Google Maps">
-                            <i class="fa-solid fa-map-location-dot"></i>
-                            <span>Peta</span>
-                        </a>
-                    </div>
-                `;
+                let tempatDisplay = `<span class="text-slate-300 light:text-slate-700 font-medium">${item.TEMPAT || '-'}</span>`;
+                if (item.GOOGLE_MAPS && item.GOOGLE_MAPS.trim() !== '') {
+                    tempatDisplay = `
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-300 light:text-slate-700 font-medium">${item.TEMPAT}</span>
+                            <a href="${item.GOOGLE_MAPS}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2 py-0.5 bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 rounded font-semibold text-[10px] inline-flex items-center gap-1 transition shrink-0" title="Buka Google Maps">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                                <span>Peta</span>
+                            </a>
+                        </div>
+                    `;
+                }
 
                 const dateFormatted = formatDateForDisplay(item.TARIKH);
 
                 return `
-                    <tr onclick="openModal(${idx})" class="hover:bg-slate-700/40 light:hover:bg-slate-100 transition cursor-pointer border-b border-slate-700/40 light:border-slate-200">
+                    <tr onclick="openModal(${idx})" class="hover:bg-slate-700/40 light:hover:bg-slate-100 transition cursor-pointer border-b border-slate-700/40 light:border-slate-300">
                         <td class="p-3.5 font-mono text-cyan-400 font-bold">#${item.BIL_HARI}</td>
                         <td class="p-3.5 font-semibold text-slate-200 light:text-slate-800">${item.HARI}</td>
                         <td class="p-3.5 font-mono text-slate-300 light:text-slate-600">${dateFormatted}</td>
                         <td class="p-3.5 font-mono text-amber-400 font-medium">${masaDisplay}</td>
-                        <td class="p-3.5 font-bold text-white light:text-slate-900">${item.SUBJEK}</td>
+                        <td class="p-3.5 font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">${item.SUBJEK}</td>
                         <td class="p-3.5 font-mono text-cyan-300 light:text-cyan-700 font-semibold">${kertasFormatted}</td>
                         <td class="p-3.5 text-slate-200 light:text-slate-800">${item.PERKARA}</td>
                         <td class="p-3.5 text-slate-300 light:text-slate-700">${tempatDisplay}</td>
-                        <td class="p-3.5 text-slate-400 light:text-slate-500 italic text-[11px]">${item.CATATAN || '-'}</td>
+                        <td class="p-3.5 text-slate-400 light:text-slate-600 italic text-[11px]">${item.CATATAN || '-'}</td>
                     </tr>
                 `;
             }).join('');
@@ -1361,17 +1695,19 @@
             document.getElementById('modalMasa').textContent = `${item.MASA_MULA} - ${item.MASA_TAMAT}`;
             document.getElementById('modalKertas').textContent = formatKertasText(item.KERTAS, 'KERTAS ', item.PERKARA);
 
-            const mapLink = (item.GOOGLE_MAPS && item.GOOGLE_MAPS.trim() !== '') ? item.GOOGLE_MAPS : DEFAULT_MAP_URL;
-            const tempatDisplay = `
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-amber-400 font-bold text-sm">${item.TEMPAT}</span>
-                    <a href="${mapLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg font-mono text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-sm">
-                        <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
-                        <span>Buka Google Maps</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                    </a>
-                </div>
-            `;
+            let tempatDisplay = `<div class="text-amber-400 font-bold text-sm">${item.TEMPAT || '-'}</div>`;
+            if (item.GOOGLE_MAPS && item.GOOGLE_MAPS.trim() !== '') {
+                tempatDisplay = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-amber-400 font-bold text-sm">${item.TEMPAT}</span>
+                        <a href="${item.GOOGLE_MAPS}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg font-mono text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-sm">
+                            <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
+                            <span>Buka Google Maps</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                    </div>
+                `;
+            }
             document.getElementById('modalTempat').innerHTML = tempatDisplay;
             document.getElementById('modalCatatan').textContent = item.CATATAN || 'Tiada catatan khas.';
 
@@ -1389,7 +1725,7 @@
                         `).join('')}
                     </div>
                 `;
-                pelajarContainer.innerHTML = '<span class="text-slate-400 light:text-slate-500 italic">Sila klik mana-mana butang Sidang Kumpulan di atas untuk paparkan senarai nama pelajar bagi sidang tersebut.</span>';
+                pelajarContainer.innerHTML = '<span class="text-slate-400 light:text-slate-600 italic">Sila klik mana-mana butang Sidang Kumpulan di atas untuk paparkan senarai nama pelajar bagi sidang tersebut.</span>';
             } else {
                 const sidangTxt = (item.SIDANG && item.SIDANG !== '-') ? item.SIDANG : '-';
                 sidangContainer.textContent = sidangTxt;
@@ -1431,17 +1767,19 @@
             document.getElementById('sessionKertas').textContent = formatKertasText(subItem.KERTAS, 'KERTAS ', subItem.PERKARA);
             document.getElementById('sessionSidangLabel').textContent = subItem.SIDANG || 'SIDANG 1';
 
-            const mapLink = (subItem.GOOGLE_MAPS && subItem.GOOGLE_MAPS.trim() !== '') ? subItem.GOOGLE_MAPS : DEFAULT_MAP_URL;
-            const tempatDisplay = `
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-amber-400 font-bold text-sm">${subItem.TEMPAT}</span>
-                    <a href="${mapLink}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg font-mono text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-sm">
-                        <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
-                        <span>Buka Google Maps</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                    </a>
-                </div>
-            `;
+            let tempatDisplay = `<div class="text-amber-400 font-bold text-sm">${subItem.TEMPAT || '-'}</div>`;
+            if (subItem.GOOGLE_MAPS && subItem.GOOGLE_MAPS.trim() !== '') {
+                tempatDisplay = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-amber-400 font-bold text-sm">${subItem.TEMPAT}</span>
+                        <a href="${subItem.GOOGLE_MAPS}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg font-mono text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-sm">
+                            <i class="fa-solid fa-map-location-dot text-cyan-400"></i>
+                            <span>Buka Google Maps</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                    </div>
+                `;
+            }
             document.getElementById('sessionTempat').innerHTML = tempatDisplay;
 
             const studentHTML = formatStudentListHTML(subItem.PELAJAR);
@@ -1455,7 +1793,7 @@
             document.getElementById('sessionStudentCountBadge').textContent = `${count} Pelajar`;
 
             document.getElementById('modalMainView').classList.add('hidden');
-            document.getElementById('modalSessionDetailView').classList.remove('hidden');
+            document.getElementById('sessionDetailView').classList.remove('hidden');
         }
 
         function toggleTheme() {
@@ -1476,6 +1814,7 @@
                 if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-amber-400';
                 if (themeLabel) themeLabel.textContent = 'Dark Theme';
             }
+            renderActiveView();
         }
 
         function toggleFullscreen() {
@@ -1528,7 +1867,7 @@
 
             if (students.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-2 p-6 text-center text-slate-400 light:text-slate-500">
+                    <div class="col-span-2 p-6 text-center text-slate-400 light:text-slate-600">
                         <i class="fa-solid fa-user-slash text-2xl mb-2 opacity-40"></i>
                         <p class="text-xs italic">Senarai nama pelajar belum diisi di Google Sheet (kolum PELAJAR).</p>
                     </div>
@@ -1540,14 +1879,14 @@
                 const oralSidangCount = s.items.length;
 
                 return `
-                    <button onclick="openStudentSidangModal('${s.originalName.replace(/'/g, "\\'")}')" class="w-full text-left p-3 rounded-xl bg-slate-900/80 light:bg-slate-100 hover:bg-slate-700/80 light:hover:bg-cyan-50 border border-slate-700/70 light:border-slate-300 transition group flex items-center justify-between shadow-sm">
+                    <button onclick="openStudentSidangModal('${s.originalName.replace(/'/g, "\\'")}')" class="w-full text-left p-3 rounded-xl bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-100 hover:bg-slate-700/80 light:hover:bg-cyan-50 border border-slate-700/70 light:border-slate-300 transition group flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <div class="w-7 h-7 rounded-lg bg-cyan-500/20 light:bg-cyan-100 text-cyan-400 light:text-cyan-700 flex items-center justify-center font-mono font-bold text-xs shrink-0 group-hover:scale-105 transition">
                                 ${idx + 1}
                             </div>
                             <div class="truncate">
-                                <div class="font-bold text-xs text-slate-100 light:text-slate-900 group-hover:text-cyan-400 transition truncate">${s.originalName}</div>
-                                <div class="text-[10px] text-slate-400 light:text-slate-500 flex items-center gap-1">
+                                <div class="font-bold text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 group-hover:text-cyan-400 transition truncate">${s.originalName}</div>
+                                <div class="text-[10px] text-slate-400 light:text-slate-600 flex items-center gap-1">
                                     <i class="fa-solid fa-calendar-check text-cyan-400 text-[9px]"></i>
                                     <span>${oralSidangCount} Sidang Ditemui</span>
                                 </div>
@@ -1609,7 +1948,7 @@
                     const sidangLabel = (item.SIDANG && item.SIDANG !== '-') ? item.SIDANG : 'Sidang 1';
 
                     return `
-                        <div class="bg-slate-800/70 light:bg-slate-100 p-2.5 rounded-lg border border-slate-700/60 light:border-slate-300 space-y-1 mb-2 last:mb-0 shadow-sm">
+                        <div class="bg-slate-800/70 dark:bg-slate-800/70 light:bg-slate-100 p-2.5 rounded-lg border border-slate-700/60 light:border-slate-300 space-y-1 mb-2 last:mb-0 shadow-sm">
                             <div class="flex items-center justify-between gap-1">
                                 <span class="font-bold text-purple-300 light:text-purple-700 font-mono text-[11px] bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">
                                     ${sidangLabel}
@@ -1629,21 +1968,21 @@
             container.innerHTML = `
                 <div class="overflow-x-auto rounded-xl border border-slate-700/80 light:border-slate-300 shadow-lg">
                     <table class="w-full text-left text-xs border-collapse">
-                        <thead class="bg-slate-800/90 light:bg-slate-100 text-slate-300 light:text-slate-700 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-300">
+                        <thead class="bg-slate-800/90 dark:bg-slate-800/90 light:bg-slate-100 text-slate-300 light:text-slate-700 uppercase font-mono font-bold border-b border-slate-700 light:border-slate-300">
                             <tr>
                                 <th class="p-3 border-r border-slate-700/80 light:border-slate-300 w-1/4">SUBJEK</th>
                                 <th class="p-3 border-r border-slate-700/80 light:border-slate-300 w-3/8 text-center bg-amber-500/10 text-amber-400">TRIAL</th>
                                 <th class="p-3 w-3/8 text-center bg-cyan-500/10 text-cyan-400">SPM</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-700/60 light:divide-slate-300 bg-slate-900/40 light:bg-white">
+                        <tbody class="divide-y divide-slate-700/60 light:divide-slate-300 bg-slate-900/40 dark:bg-slate-900/40 light:bg-white">
                             ${subjectRows.map(row => {
                                 const trialItems = getItemsForCell(row.keywords, true);
                                 const spmItems = getItemsForCell(row.keywords, false);
 
                                 return `
                                     <tr class="hover:bg-slate-800/30 light:hover:bg-slate-50 transition">
-                                        <td class="p-3 font-bold text-white light:text-slate-900 font-mono border-r border-slate-700/80 light:border-slate-300 bg-slate-800/40 light:bg-slate-50">
+                                        <td class="p-3 font-bold text-slate-100 dark:text-slate-100 light:text-slate-900 font-mono border-r border-slate-700/80 light:border-slate-300 bg-slate-800/40 dark:bg-slate-800/40 light:bg-slate-50">
                                             ${row.id}
                                         </td>
                                         <td class="p-2.5 border-r border-slate-700/80 light:border-slate-300 align-top">
